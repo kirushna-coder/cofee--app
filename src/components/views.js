@@ -82,7 +82,7 @@ const LoginView = {
                         </div>
                         <button class="btn-primary" style="margin-top: 8px; padding: 14px;" onclick="LoginView.handleLogin()">Sign In</button>
                         <p style="text-align: center; font-size: 14px; margin-top: 8px;">Don't have an account? <a href="#" onclick="LoginView.showRegisterForm()" style="color: var(--accent-blue); font-weight: 600;">Sign Up</a></p>
-                        <button class="btn-ghost" style="padding: 10px; border: 1px dashed var(--accent-blue); font-size: 12px;" onclick="LoginView.autoLogin()">Quick Admin Entry</button>
+
                     </div>
                 </div>
             </div>
