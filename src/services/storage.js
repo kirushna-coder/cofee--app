@@ -100,6 +100,16 @@ const StorageService = {
         }
     },
 
+    removeFromCollection(key, id) {
+        const data = this.getData();
+        if (data[key]) {
+            data[key] = data[key].filter(item => item.id !== id);
+            this.saveData(data);
+            return true;
+        }
+        return false;
+    },
+
     getInactivityStatus() {
         const lastLogin = parseInt(localStorage.getItem(STORAGE_KEYS.LAST_LOGIN));
         const oneWeek = 7 * 24 * 60 * 60 * 1000;

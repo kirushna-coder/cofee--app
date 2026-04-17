@@ -29,6 +29,7 @@ const LibraryView = {
                             <div style="display: flex; gap: 8px;">
                                 <button class="btn-ghost" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
                                 <button class="btn-ghost" onclick="NotificationSystem.toast('Extension granted (7 days)', 'success')">Extend</button>
+                                <button class="icon-btn" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
                                 <button class="btn-primary" onclick="NotificationSystem.simulateSend('Student ${book.studentId}', 'WhatsApp', 'Return Reminder')">Remind</button>
                             </div>
                         </div>
@@ -73,11 +74,6 @@ const LoginView = {
                         <button class="btn-ghost" style="padding: 12px; border: 1px dashed var(--accent-blue);" onclick="LoginView.autoLogin()">Quick Admin Entry</button>
                     </div>
                     
-                    <div style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-                        <p class="user-role" style="font-size: 12px; margin-bottom: 8px;">Default Credentials:</p>
-                        <p class="user-role" style="font-size: 12px;">Admin: <strong>admin</strong> / Pass: <strong>p</strong></p>
-                        <button class="btn-ghost" style="margin-top: 20px; font-size: 10px; opacity: 0.5;" onclick="LoginView.resetSystem()">Force System Reset</button>
-                    </div>
                 </div>
             </div>
         `;
@@ -224,20 +220,46 @@ const AdminStudentsView = {
                 </div>
             </div>
 
-            <div class="section">
-                <div class="stat-card" style="max-width: 600px;">
-                    <h3>Register New Student</h3>
-                    <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
-                        <input type="text" id="new-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
-                        <input type="text" id="new-parent" class="btn-ghost" style="padding: 12px;" placeholder="Parent Name">
-                        <input type="email" id="new-email" class="btn-ghost" style="padding: 12px;" placeholder="Parent Email">
-                        <input type="tel" id="new-phone" class="btn-ghost" style="padding: 12px;" placeholder="Parent Phone">
-                        <button class="btn-primary" onclick="AdminStudentsView.addStudent()">Register Student</button>
+             <div class="section">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                    <div class="stat-card">
+                        <h3>Register New Student</h3>
+                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+                            <input type="text" id="new-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
+                            <input type="text" id="new-parent" class="btn-ghost" style="padding: 12px;" placeholder="Parent Name">
+                            <input type="email" id="new-email" class="btn-ghost" style="padding: 12px;" placeholder="Parent Email">
+                            <input type="tel" id="new-phone" class="btn-ghost" style="padding: 12px;" placeholder="Parent Phone">
+                            <button class="btn-primary" onclick="AdminStudentsView.addStudent()">Register Student</button>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Registered Students</h3>
+                        <div class="alerts-list" style="margin-top: 24px; max-height: 400px; overflow-y: auto;">
+                            ${data.students.map(s => `
+                                <div class="alert-item" style="padding: 12px;">
+                                    <div class="alert-content">
+                                        <p class="alert-msg" style="font-size: 14px;">${s.name}</p>
+                                    </div>
+                                    <button class="icon-btn" onclick="AdminStudentsView.deleteStudent(${s.id})" title="Delete Student">
+                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
         `;
         lucide.createIcons();
+    },
+
+    deleteStudent(id) {
+        if (confirm("Are you sure you want to delete this student and all their records?")) {
+            StorageService.removeFromCollection('students', id);
+            NotificationSystem.toast("Student removed from system", "success");
+            this.render();
+        }
     },
 
     addStudent() {
@@ -280,13 +302,24 @@ const FeesView = {
                                 <p class="alert-msg">${f.month} - ₹${f.amount}</p>
                                 <p class="user-role">Student: ${LibraryView.getStudentName(f.studentId)} | Status: ${f.status}</p>
                             </div>
-                            <button class="btn-primary" onclick="NotificationSystem.simulateSend('Parent ${f.studentId}', 'WhatsApp', 'Fee Reminder')">Send Reminder</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="icon-btn" onclick="FeesView.deleteItem(${f.id})" title="Delete Record"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('Parent ${f.studentId}', 'WhatsApp', 'Fee Reminder')">Send Reminder</button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
             </div>
         `;
         lucide.createIcons();
+    },
+
+    deleteItem(id) {
+        if (confirm("Are you sure you want to delete this fee record?")) {
+            StorageService.removeFromCollection('fees', id);
+            NotificationSystem.toast("Fee record deleted", "success");
+            this.render();
+        }
     }
 };
 
@@ -307,13 +340,24 @@ const WorksheetsView = {
                                <p class="alert-msg">${w.title} (Launched: ${w.launched})</p>
                                <p class="user-role">Difficulty: ${w.difficulty}</p>
                            </div>
-                           <button class="btn-ghost" onclick="NotificationSystem.simulateSend('Team 3 Members', 'WhatsApp', 'New Worksheet Alert')">Announce</button>
-                       </div>
-                   `).join('')}
-               </div>
-           </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="icon-btn" onclick="WorksheetsView.deleteItem(${w.id})" title="Delete Worksheet"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                <button class="btn-ghost" onclick="NotificationSystem.simulateSend('Team 3 Members', 'WhatsApp', 'New Worksheet Alert')">Announce</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
         `;
         lucide.createIcons();
+    },
+
+    deleteItem(id) {
+        if (confirm("Are you sure you want to delete this worksheet?")) {
+            StorageService.removeFromCollection('worksheets', id);
+            NotificationSystem.toast("Worksheet deleted", "success");
+            this.render();
+        }
     }
 };
 
@@ -334,13 +378,24 @@ const NewspapersView = {
                                <p class="alert-msg">${n.title}</p>
                                <p class="user-role">Published: ${new Date(n.launched).toLocaleString()}</p>
                            </div>
-                           <button class="btn-primary" onclick="NotificationSystem.simulateSend('Members', 'WhatsApp', 'Newspaper Link')">Dispatch to Group</button>
-                       </div>
-                   `).join('')}
-               </div>
-           </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="icon-btn" onclick="NewspapersView.deleteItem(${n.id})" title="Delete Newspaper"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('Members', 'WhatsApp', 'Newspaper Link')">Dispatch to Group</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
         `;
         lucide.createIcons();
+    },
+
+    deleteItem(id) {
+        if (confirm("Are you sure you want to delete this newspaper entry?")) {
+            StorageService.removeFromCollection('newspapers', id);
+            NotificationSystem.toast("Newspaper entry deleted", "success");
+            this.render();
+        }
     }
 };
 
