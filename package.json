@@ -1,0 +1,12 @@
+{
+  "name": "cofee-app",
+  "version": "1.0.0",
+  "description": "Team 3 School Management Dashboard",
+  "main": "main.js",
+  "scripts": {
+    "start": "npx http-server ./"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

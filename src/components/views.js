@@ -232,6 +232,18 @@ const ProfileView = {
         }
 
         const container = document.getElementById('view-container');
+        
+        // Calculate attendance
+        const attendanceRecords = data.attendanceRecords || [];
+        const attendance = attendanceRecords.filter(r => r.studentId === student.id);
+        const presentCount = attendance.filter(r => r.status === 'present').length;
+        const totalDays = attendance.length || 1;
+        const attendanceRate = Math.round((presentCount / totalDays) * 100);
+
+        // Get grades
+        const performanceMetrics = data.performanceMetrics || [];
+        const grades = performanceMetrics.filter(m => m.studentId === student.id);
+
         container.innerHTML = `
             <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
                 <button class="icon-btn" onclick="switchView('students')"><i data-lucide="arrow-left"></i></button>
@@ -241,32 +253,68 @@ const ProfileView = {
                 </div>
             </div>
 
-            <div class="section" style="max-width: 600px; margin: 40px 0;">
-                <div class="stat-card" style="padding: 40px; text-align: center;">
-                    <div class="user-avatar" style="width: 100px; height: 100px; font-size: 32px; background: var(--accent-blue); margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 0 30px var(--accent-blue-glow);">
-                        ${student.name.charAt(0)}
+            <div class="profile-layout" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 32px; margin-top: 32px;">
+                <div class="profile-sidebar">
+                    <div class="stat-card" style="padding: 40px; text-align: center;">
+                        <div class="user-avatar" style="width: 100px; height: 100px; font-size: 32px; background: var(--accent-blue); margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 0 30px var(--accent-blue-glow);">
+                            ${student.name.charAt(0)}
+                        </div>
+                        <h1 style="font-size: 28px; margin-bottom: 8px;">${student.name}</h1>
+                        <p class="user-role" style="font-size: 16px; margin-bottom: 32px;">Student ID: #TS3-${student.id.toString().padStart(3, '0')}</p>
+                        
+                        <div style="text-align: left; background: var(--glass-bg); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                            <div style="margin-bottom: 20px;">
+                                <p class="user-role" style="font-size: 10px; text-transform: uppercase;">Parent / Guardian</p>
+                                <p style="font-size: 16px; font-weight: 600;">${student.parentName}</p>
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <p class="user-role" style="font-size: 10px; text-transform: uppercase;">Contact</p>
+                                <p style="font-size: 16px; font-weight: 600;">${student.parentPhone}</p>
+                            </div>
+                            <div>
+                                <p class="user-role" style="font-size: 10px; text-transform: uppercase;">Email</p>
+                                <p style="font-size: 16px; font-weight: 600; word-break: break-all;">${student.parentEmail}</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr; gap: 12px;">
+                            <button class="btn-primary" onclick="NotificationSystem.simulateSend('${student.name}', 'WhatsApp', 'Direct Message')">Message Student</button>
+                            <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Call Invitation')">Call Parent</button>
+                        </div>
                     </div>
-                    <h1 style="font-size: 28px; margin-bottom: 8px;">${student.name}</h1>
-                    <p class="user-role" style="font-size: 16px; margin-bottom: 32px;">Student ID: #TS3-${student.id.toString().padStart(3, '0')}</p>
-                    
-                    <div style="text-align: left; background: var(--glass-bg); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <div style="margin-bottom: 20px;">
-                            <p class="user-role" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Parent / Guardian</p>
-                            <p style="font-size: 18px; font-weight: 600;">${student.parentName}</p>
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <p class="user-role" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Contact Number</p>
-                            <p style="font-size: 18px; font-weight: 600; color: var(--accent-blue);">${student.parentPhone}</p>
-                        </div>
-                        <div>
-                            <p class="user-role" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Email Address</p>
-                            <p style="font-size: 18px; font-weight: 600;">${student.parentEmail}</p>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="section" style="margin-top: 0;">
+                        <h3>Attendance Summary</h3>
+                        <div class="stat-card" style="margin-top: 16px; display: flex; align-items: center; gap: 32px;">
+                            <div class="circular-progress" style="--percent: ${attendanceRate}">
+                                <span class="value">${attendanceRate}%</span>
+                            </div>
+                            <div class="stat-info">
+                                <p class="user-role">Presence rate for April 2026</p>
+                                <p style="font-size: 14px; margin-top: 8px;">Target: 95% | Current: ${attendanceRate}%</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <button class="btn-primary" onclick="NotificationSystem.simulateSend('${student.name}', 'WhatsApp', 'Direct Message')">Message Student</button>
-                        <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Call Invitation')">Call Parent</button>
+                    <div class="section">
+                        <h3>Subject Performance</h3>
+                        <div class="stat-card" style="margin-top: 16px;">
+                            <div class="grades-list" style="display: flex; flex-direction: column; gap: 20px;">
+                                ${grades.map(g => `
+                                    <div class="grade-item">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                            <span style="font-size: 14px; font-weight: 600;">${g.subject}</span>
+                                            <span style="font-size: 14px; color: var(--accent-blue);">${g.score}/${g.max}</span>
+                                        </div>
+                                        <div class="progress-container">
+                                            <div class="progress-bar" style="width: ${g.score}%; background: ${g.score > 80 ? 'var(--accent-emerald)' : 'var(--accent-blue)'}"></div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -316,6 +364,63 @@ const BlueprintView = {
     }
 };
 
+const PerformanceView = {
+    render() {
+        const data = StorageService.getData();
+        const container = document.getElementById('view-container');
+        
+        // Calculate class averages
+        const performanceMetrics = data.performanceMetrics || [];
+        const subjects = ["Mathematics", "English", "Science"];
+        const averages = subjects.map(sub => {
+            const scores = performanceMetrics.filter(m => m.subject === sub);
+            const avg = scores.length > 0 ? (scores.reduce((sum, m) => sum + m.score, 0) / scores.length) : 0;
+            return { subject: sub, average: Math.round(avg) };
+        });
+
+        container.innerHTML = `
+            <div class="view-header">
+                <h2>Performance Analytics</h2>
+                <p>Class-wide academic performance and subject benchmarks.</p>
+            </div>
+
+            <div class="section">
+                <h3>Subject Averages</h3>
+                <div class="dashboard-grid" style="margin-top: 24px;">
+                    ${averages.map(avg => `
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <h3>${avg.subject} Average</h3>
+                                <p class="value">${avg.average}%</p>
+                                <div class="progress-container">
+                                    <div class="progress-bar" style="width: ${avg.average}%; background: var(--accent-blue)"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Top Performers</h3>
+                <div class="alerts-list">
+                    ${data.students.slice(0, 3).map(s => `
+                        <div class="alert-item">
+                            <div class="user-avatar" style="background: var(--accent-emerald)">${s.name.charAt(0)}</div>
+                            <div class="alert-content">
+                                <p class="alert-msg">${s.name}</p>
+                                <p class="user-role">Consistently High Performance</p>
+                            </div>
+                            <div class="badge badge-emerald">Rank #${data.students.indexOf(s) + 1}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+};
+
 window.LibraryView = LibraryView;
 window.AdminView = AdminView;
 window.FeesView = FeesView;
@@ -324,3 +429,4 @@ window.NewspapersView = NewspapersView;
 window.StudentsView = StudentsView;
 window.ProfileView = ProfileView;
 window.BlueprintView = BlueprintView;
+window.PerformanceView = PerformanceView;

@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 5; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 6; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
@@ -45,7 +45,21 @@ const DEFAULT_DATA = {
     newspapers: [
         { id: 501, title: "Daily News - April 16", launched: "2026-04-16T08:00:00", url: "#" }
     ],
-    attendance: [] // Populated by admin
+    attendance: [], // Populated by admin
+    attendanceRecords: [
+        { date: "2026-04-10", studentId: 1, status: "present" },
+        { date: "2026-04-10", studentId: 2, status: "absent" },
+        { date: "2026-04-11", studentId: 1, status: "present" },
+        { date: "2026-04-11", studentId: 2, status: "present" }
+    ],
+    performanceMetrics: [
+        { studentId: 1, subject: "Mathematics", score: 88, max: 100 },
+        { studentId: 1, subject: "English", score: 92, max: 100 },
+        { studentId: 1, subject: "Science", score: 85, max: 100 },
+        { studentId: 2, subject: "Mathematics", score: 75, max: 100 },
+        { studentId: 2, subject: "English", score: 80, max: 100 },
+        { studentId: 2, subject: "Science", score: 78, max: 100 }
+    ]
 };
 
 const StorageService = {

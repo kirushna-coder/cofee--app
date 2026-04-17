@@ -47,6 +47,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Badge
     NotificationSystem.updateBadge();
 
+    // 5. Theme Toggle Logic
+    const themeBtn = document.getElementById('theme-btn');
+    const body = document.body;
+    
+    // Check saved theme
+    const savedTheme = localStorage.getItem('cofee_theme') || 'dark';
+    if (savedTheme === 'light') {
+        body.classList.remove('dark-theme');
+        body.classList.add('light-theme');
+        updateThemeIcon('sun');
+    }
+
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                localStorage.setItem('cofee_theme', 'light');
+                updateThemeIcon('sun');
+            } else {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                localStorage.setItem('cofee_theme', 'dark');
+                updateThemeIcon('moon');
+            }
+        });
+    }
+
+    function updateThemeIcon(iconName) {
+        themeBtn.innerHTML = `<i data-lucide="${iconName}"></i>`;
+        lucide.createIcons();
+    }
+
     // Default View
     switchView('dashboard');
 });
@@ -74,6 +107,9 @@ function switchView(view, params = null) {
             break;
         case 'blueprint':
             BlueprintView.render();
+            break;
+        case 'performance':
+            PerformanceView.render();
             break;
         case 'students':
             StudentsView.render();
