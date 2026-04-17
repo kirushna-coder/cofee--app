@@ -76,6 +76,11 @@ body {
     justify-content: space-between;
     padding: 0 40px;
     z-index: 2000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
 }
 
 .nav-brand {
@@ -299,7 +304,7 @@ body {
     flex: 1;
     overflow-y: auto;
     background-color: var(--bg-primary);
-    padding-top: 0;
+    padding-top: var(--header-height);
 }
 
 .view-header {
