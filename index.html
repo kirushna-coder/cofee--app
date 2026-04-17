@@ -15,16 +15,27 @@
 </head>
 <body class="dark-theme">
     <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo-section">
-                <div class="logo-icon">☕</div>
-                <h1>CoFee<span>App</span></h1>
+        <!-- Top Navigation Bar -->
+        <header class="top-nav">
+            <div class="nav-left">
+                <div class="logo-section">
+                    <div class="logo-icon">☕</div>
+                    <h1>CoFee<span>App</span></h1>
+                </div>
+                <div class="header-search">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search students, books, fees...">
+                </div>
             </div>
+
             <nav class="sidebar-nav">
                 <button class="nav-item active" data-view="dashboard">
                     <i data-lucide="layout-dashboard"></i>
                     <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="admin">
+                    <i data-lucide="settings"></i>
+                    <span>Admin Panel</span>
                 </button>
                 <button class="nav-item" data-view="students">
                     <i data-lucide="users"></i>
@@ -48,39 +59,22 @@
                 </button>
                 <button class="nav-item" data-view="blueprint">
                     <i data-lucide="map"></i>
-                    <span>Campus Blueprint</span>
+                    <span>Blueprint</span>
                 </button>
                 <button class="nav-item" data-view="performance">
                     <i data-lucide="bar-chart-2"></i>
                     <span>Performance</span>
                 </button>
-                <div class="nav-divider"></div>
-                <button class="nav-item" data-view="admin">
-                    <i data-lucide="settings"></i>
-                    <span>Admin Panel</span>
-                </button>
+                <!-- More items can be accessed via horizontal scroll or a dropdown if needed -->
             </nav>
-            <div class="sidebar-footer">
-                <div class="user-card">
-                    <div class="user-avatar">AD</div>
-                    <div class="user-info">
-                        <p class="user-name">Admin User</p>
-                        <p class="user-role">Team 3 Staff</p>
-                    </div>
-                </div>
-            </div>
-        </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="content-header">
-                <div class="header-search">
-                    <i data-lucide="search"></i>
-                    <input type="text" placeholder="Search students, books, fees...">
-                </div>
+            <div class="nav-right">
                 <div class="header-actions">
+                    <button class="icon-btn" id="theme-btn">
+                        <i data-lucide="moon"></i>
+                    </button>
                     <div class="notification-wrapper">
-                        <button class="icon-btn notification-trigger" id="notif-btn">
+                        <button class="icon-btn" id="notif-btn">
                             <i data-lucide="bell"></i>
                             <span class="notification-badge" id="notif-badge">0</span>
                         </button>
@@ -89,29 +83,36 @@
                                 <h3>Notifications</h3>
                                 <button class="btn-ghost btn-sm" onclick="NotificationSystem.clearAll()">Clear All</button>
                             </div>
-                            <div class="dropdown-body" id="notif-items">
-                                <!-- Alerts will be injected here -->
-                            </div>
+                            <div class="dropdown-body" id="notif-items"></div>
                         </div>
                     </div>
-                    <button class="icon-btn" id="theme-btn">
-                        <i data-lucide="moon"></i>
-                    </button>
+                    <div class="user-card" onclick="switchView('profile', AuthService.getUser().id)" style="cursor: pointer;">
+                        <div class="user-avatar" id="nav-user-avatar">AD</div>
+                    </div>
                 </div>
-            </header>
+                <button class="icon-btn" id="menu-toggle" style="display: none;">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
+        </header>
 
+        <!-- Main Content -->
+        <main class="main-content">
             <div id="view-container" class="view-content fade-in">
                 <!-- Content will be injected here by main.js -->
                 <div class="loading">Loading Dashboard...</div>
             </div>
         </main>
     </div>
+    
+    <div id="sidebar-overlay"></div>
 
     <!-- Notification Overlay -->
     <div id="toast-container"></div>
 
     <!-- Services -->
     <script src="src/services/storage.js"></script>
+    <script src="src/services/auth.js"></script>
     <script src="src/services/notificationSystem.js"></script>
     
     <!-- Components -->

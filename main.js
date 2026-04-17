@@ -6,10 +6,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize Storage
     const lastLoginTime = StorageService.init();
     
-    // 2. Initialize UI Components
+    // 2. Auth Check
+    if (!AuthService.isAuthenticated()) {
+        switchView('login');
+        return; // Stop initialization of main app
+    }
+
+    // 3. Update User Info in Top Nav
+    const user = AuthService.getUser();
+    if (user) {
+        document.getElementById('nav-user-avatar').textContent = user.name.split(' ').map(n => n[0]).join('');
+    }
+
+    // 4. Initialize UI Components
     lucide.createIcons();
     
-    // 3. Setup Navigation
+    // 5. Setup Navigation
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -20,6 +32,16 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.add('active');
         });
     });
+
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('menu-toggle');
+    const navScroll = document.querySelector('.sidebar-nav');
+
+    if (menuToggle && navScroll) {
+        menuToggle.addEventListener('click', () => {
+            navScroll.classList.toggle('mobile-open');
+        });
+    }
 
     // 4. Check for Inactivity
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
@@ -87,6 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function switchView(view, params = null) {
     console.log(`Switching to view: ${view}`, params);
     const container = document.getElementById('view-container');
+    
+    if (view === 'login') {
+        LoginView.render();
+        return;
+    }
+
     container.className = 'view-content fade-in';
     
     switch(view) {
@@ -119,6 +147,9 @@ function switchView(view, params = null) {
             break;
         case 'admin':
             AdminView.render();
+            break;
+        case 'admin-students':
+            AdminStudentsView.render();
             break;
         default:
             container.innerHTML = '<h2>Coming Soon</h2>';

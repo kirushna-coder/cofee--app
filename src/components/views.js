@@ -40,6 +40,86 @@ const LibraryView = {
     }
 };
 
+const LoginView = {
+    render() {
+        const container = document.getElementById('view-container');
+        // Hide top nav while on login page
+        const topNav = document.querySelector('.top-nav');
+        if (topNav) topNav.style.display = 'none';
+        document.body.classList.add('login-page');
+
+        container.innerHTML = `
+            <div class="login-wrapper">
+                <div class="login-card stat-card">
+                    <div class="logo-section" style="margin-bottom: 32px; justify-content: center;">
+                        <div class="logo-icon">☕</div>
+                        <h1>CoFee<span>App</span></h1>
+                    </div>
+                    <h2>Welcome Back</h2>
+                    <p class="user-role" style="margin-bottom: 32px;">Please sign in to continue to Team 3 Dashboard.</p>
+                    
+                    <div id="login-error" class="badge badge-rose" style="display: none; width: 100%; margin-bottom: 20px; text-transform: none;"></div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 16px; text-align: left;">
+                        <div>
+                            <p class="user-role font-sm" style="margin-bottom: 8px;">Username</p>
+                            <input type="text" id="username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="admin">
+                        </div>
+                        <div>
+                            <p class="user-role font-sm" style="margin-bottom: 8px;">Password</p>
+                            <input type="password" id="password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••">
+                        </div>
+                        <button class="btn-primary" style="margin-top: 16px; padding: 14px;" onclick="LoginView.handleLogin()">Sign In</button>
+                        <button class="btn-ghost" style="padding: 12px; border: 1px dashed var(--accent-blue);" onclick="LoginView.autoLogin()">Quick Admin Entry</button>
+                    </div>
+                    
+                    <div style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+                        <p class="user-role" style="font-size: 12px; margin-bottom: 8px;">Default Credentials:</p>
+                        <p class="user-role" style="font-size: 12px;">Admin: <strong>admin</strong> / Pass: <strong>p</strong></p>
+                        <button class="btn-ghost" style="margin-top: 20px; font-size: 10px; opacity: 0.5;" onclick="LoginView.resetSystem()">Force System Reset</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    },
+
+    resetSystem() {
+        if (confirm("This will clear all saved data and reset the app. Continue?")) {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.reload();
+        }
+    },
+
+    autoLogin() {
+        document.getElementById('username').value = 'admin';
+        document.getElementById('password').value = 'p';
+        this.handleLogin();
+    },
+
+    handleLogin() {
+        const user = document.getElementById('username').value.trim().toLowerCase();
+        const pass = document.getElementById('password').value;
+        const errorEl = document.getElementById('login-error');
+        
+        const result = AuthService.login(user, pass);
+        if (result.success) {
+            // Restore UI
+            const topNav = document.querySelector('.top-nav');
+            if (topNav) topNav.style.display = 'flex';
+            document.body.classList.remove('login-page');
+            
+            // Redirect to dashboard
+            window.location.reload(); 
+        } else {
+            errorEl.textContent = result.message;
+            errorEl.style.display = 'block';
+            NotificationSystem.toast(result.message, 'error');
+        }
+    }
+};
+
 const AdminView = {
     render() {
         const data = StorageService.getData();
@@ -47,15 +127,15 @@ const AdminView = {
         container.innerHTML = `
             <div class="view-header">
                 <h2>Admin Master Panel</h2>
-                <p>Send manual updates and broadcast notifications.</p>
+                <p>Manage students, attendance, and broadcasting.</p>
             </div>
             
             <div class="dashboard-grid" style="margin-top: 24px;">
-                <div class="stat-card" onclick="NotificationSystem.simulateSend('Parents Group', 'WhatsApp/Mail', 'Attendance Report')">
-                    <div class="stat-icon"><i data-lucide="user-check"></i></div>
+                <div class="stat-card" onclick="switchView('admin-students')">
+                    <div class="stat-icon"><i data-lucide="user-plus"></i></div>
                     <div class="stat-info">
-                        <h3>Daily Attendance</h3>
-                        <p class="user-role">Send topics & presence</p>
+                        <h3>Student Management</h3>
+                        <p class="user-role">Add or edit students</p>
                     </div>
                 </div>
                 <div class="stat-card" onclick="NotificationSystem.simulateSend('All Members', 'WhatsApp/Mail', 'New Arrivals')">
@@ -65,35 +145,39 @@ const AdminView = {
                         <p class="user-role">Broadcast library books</p>
                     </div>
                 </div>
-                <div class="stat-card" onclick="NotificationSystem.simulateSend('Active Students', 'Mail', 'Newspapers Feed')">
-                    <div class="stat-icon"><i data-lucide="mail"></i></div>
+                <div class="stat-card" onclick="AuthService.logout()">
+                    <div class="stat-icon"><i data-lucide="log-out"></i></div>
                     <div class="stat-info">
-                        <h3>Send Newspapers</h3>
-                        <p class="user-role">Dispatch today's news</p>
+                        <h3>Logout</h3>
+                        <p class="user-role">Securely sign out</p>
                     </div>
                 </div>
             </div>
 
             <div class="section">
-                <h3>Attendance & Topics Management</h3>
+                <h3>Attendance Summary (Manual Entry)</h3>
                 <div class="stat-card" style="margin-top: 16px;">
                     <div class="attendance-setup" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="student-select">
-                            <p class="user-role" style="margin-bottom: 10px;">Mark Presence:</p>
-                            <div class="student-presence-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                            <p class="user-role" style="margin-bottom: 10px;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;"></p>
+                            <div class="student-presence-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
                                 ${data.students.map(s => `
-                                    <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer;">
-                                        <input type="checkbox" checked> ${s.name}
+                                    <label style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; cursor: pointer; padding: 8px; background: var(--glass-bg); border-radius: 8px;">
+                                        <span>${s.name}</span>
+                                        <div style="display: flex; gap: 8px;">
+                                            <input type="radio" name="att-${s.id}" value="present" checked> P
+                                            <input type="radio" name="att-${s.id}" value="absent"> A
+                                        </div>
                                     </label>
                                 `).join('')}
                             </div>
                         </div>
                         <div class="topic-setup">
                             <p class="user-role" style="margin-bottom: 10px;">Topics Covered Today:</p>
-                            <textarea id="topics-covered" class="btn-ghost" style="width: 100%; height: 100px; padding: 12px; resize: none;" placeholder="e.g. Algebra - Page 45-50..."></textarea>
+                            <textarea id="topics-covered" class="btn-ghost" style="width: 100%; height: 160px; padding: 12px; resize: none;" placeholder="e.g. Algebra - Page 45-50..."></textarea>
+                            <button class="btn-primary" style="margin-top: 12px; width: 100%;" onclick="AdminView.saveAttendance()">Save & Notify Parents</button>
                         </div>
                     </div>
-                    <button class="btn-primary" style="margin-top: 20px;" onclick="NotificationSystem.simulateSend('Parents Group', 'WhatsApp', 'Detailed Attendance & Topics Update')">Send Detailed Report to Parents</button>
                 </div>
             </div>
 
@@ -106,6 +190,76 @@ const AdminView = {
             </div>
         `;
         lucide.createIcons();
+    },
+
+    saveAttendance() {
+        const date = document.getElementById('attendance-date').value;
+        const data = StorageService.getData();
+        const newRecords = [];
+
+        data.students.forEach(s => {
+            const status = document.querySelector(`input[name="att-${s.id}"]:checked`).value;
+            newRecords.push({ date, studentId: s.id, status });
+        });
+
+        // Add to records
+        data.attendanceRecords = [...(data.attendanceRecords || []), ...newRecords];
+        StorageService.saveData(data);
+
+        NotificationSystem.toast(`Attendance for ${date} saved and parents notified!`, 'success');
+        NotificationSystem.simulateSend('Parents Group', 'WhatsApp', `Daily Update: ${document.getElementById('topics-covered').value}`);
+    }
+};
+
+const AdminStudentsView = {
+    render() {
+        const data = StorageService.getData();
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+                <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
+                <div>
+                    <h2>Student Management</h2>
+                    <p>Add new students to the Team 3 roster.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="stat-card" style="max-width: 600px;">
+                    <h3>Register New Student</h3>
+                    <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+                        <input type="text" id="new-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
+                        <input type="text" id="new-parent" class="btn-ghost" style="padding: 12px;" placeholder="Parent Name">
+                        <input type="email" id="new-email" class="btn-ghost" style="padding: 12px;" placeholder="Parent Email">
+                        <input type="tel" id="new-phone" class="btn-ghost" style="padding: 12px;" placeholder="Parent Phone">
+                        <button class="btn-primary" onclick="AdminStudentsView.addStudent()">Register Student</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    },
+
+    addStudent() {
+        const name = document.getElementById('new-name').value;
+        const parentName = document.getElementById('new-parent').value;
+        const parentEmail = document.getElementById('new-email').value;
+        const parentPhone = document.getElementById('new-phone').value;
+
+        if (!name || !parentName) {
+            NotificationSystem.toast("Name and Parent Name are required", "error");
+            return;
+        }
+
+        const data = StorageService.getData();
+        const newId = data.students.length > 0 ? Math.max(...data.students.map(s => s.id)) + 1 : 1;
+        
+        const newStudent = { id: newId, name, parentName, parentEmail, parentPhone };
+        data.students.push(newStudent);
+        StorageService.saveData(data);
+
+        NotificationSystem.toast(`${name} registered successfully!`, "success");
+        switchView('students');
     }
 };
 
@@ -422,7 +576,9 @@ const PerformanceView = {
 };
 
 window.LibraryView = LibraryView;
+window.LoginView = LoginView;
 window.AdminView = AdminView;
+window.AdminStudentsView = AdminStudentsView;
 window.FeesView = FeesView;
 window.WorksheetsView = WorksheetsView;
 window.NewspapersView = NewspapersView;
