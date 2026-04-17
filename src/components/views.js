@@ -530,7 +530,6 @@ const ProfileView = {
                 </div>
             </div>
         `;
-        `;
         lucide.createIcons();
     }
 };

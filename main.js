@@ -35,11 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile Menu Toggle
     const menuToggle = document.getElementById('menu-toggle');
-    const navScroll = document.querySelector('.sidebar-nav');
+    const sidebar = document.querySelector('.sidebar');
 
-    if (menuToggle && navScroll) {
+    if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', () => {
-            navScroll.classList.toggle('mobile-open');
+            sidebar.classList.toggle('mobile-open');
         });
     }
 
