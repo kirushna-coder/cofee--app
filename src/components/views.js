@@ -295,6 +295,10 @@ const AdminView = {
 
 const AdminStudentsView = {
     render() {
+        if (!AuthService.isAdmin()) {
+            AdminView.renderAccessDenied();
+            return;
+        }
         const data = StorageService.getData();
         const container = document.getElementById('view-container');
         container.innerHTML = `
@@ -498,29 +502,33 @@ const NewspapersView = {
 
 const StudentsView = {
     render() {
-        if (!AuthService.isAdmin()) {
-            AdminView.renderAccessDenied();
-            return;
-        }
         const data = StorageService.getData();
+        const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
             <div class="view-header">
                 <h2>Student Roster</h2>
                 <p>Full list of students enrolled in Team 3.</p>
+                ${!isAdmin ? `<div class="badge badge-amber" style="margin-top: 8px; display: inline-flex; gap: 6px; align-items: center;"><i data-lucide="shield" style="width:12px;height:12px;"></i> Profile details are restricted to Admins</div>` : ''}
             </div>
             <div class="section">
                 <div class="alerts-list">
                     ${data.students.map(s => `
                         <div class="alert-item">
-                            <div class="user-avatar" style="width: 40px; height: 40px; background: var(--glass-bg); display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid var(--border-color);">
+                            <div class="user-avatar" style="width: 40px; height: 40px; background: var(--accent-blue); flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50; color: white; font-weight: 700;">
                                 ${s.name.charAt(0)}
                             </div>
                             <div class="alert-content">
                                 <p class="alert-msg">${s.name}</p>
-                                <p class="user-role">Parent: ${s.parentName} | ${s.parentPhone}</p>
+                                ${isAdmin
+                                    ? `<p class="user-role">Parent: ${s.parentName} | ${s.parentPhone}</p>`
+                                    : `<p class="user-role" style="color: var(--accent-rose);"><i data-lucide="lock" style="width:11px;height:11px; display:inline-block; vertical-align: middle;"></i> Contact info hidden</p>`
+                                }
                             </div>
-                            <button class="btn-ghost" onclick="switchView('profile', ${s.id})">View Profile</button>
+                            ${isAdmin
+                                ? `<button class="btn-ghost" onclick="switchView('profile', ${s.id})">View Profile</button>`
+                                : `<span class="badge badge-rose" style="font-size: 10px; white-space: nowrap;">Admin Only</span>`
+                            }
                         </div>
                     `).join('')}
                 </div>

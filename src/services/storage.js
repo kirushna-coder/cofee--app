@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 8; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 9; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
