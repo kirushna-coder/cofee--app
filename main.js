@@ -22,10 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
     
     // 5. Setup Navigation
+    const isAdmin = AuthService.isAdmin();
     const navItems = document.querySelectorAll('.nav-item');
+    
     navItems.forEach(item => {
+        const view = item.getAttribute('data-view');
+        
+        // Hide Admin Panel for non-admins
+        if (view === 'admin' && !isAdmin) {
+            item.style.display = 'none';
+        }
+
         item.addEventListener('click', () => {
-            const view = item.getAttribute('data-view');
             switchView(view);
             
             navItems.forEach(i => i.classList.remove('active'));

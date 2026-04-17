@@ -11,6 +11,7 @@ const LibraryView = {
 
     render() {
         const data = StorageService.getData();
+        const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
             <div class="view-header">
@@ -27,10 +28,14 @@ const LibraryView = {
                                 <p class="user-role">Due: ${book.dueDate}</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn-ghost" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
-                                <button class="btn-ghost" onclick="NotificationSystem.toast('Extension granted (7 days)', 'success')">Extend</button>
-                                <button class="icon-btn" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('Student ${book.studentId}', 'WhatsApp', 'Return Reminder')">Remind</button>
+                                ${isAdmin ? `
+                                    <button class="btn-ghost" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
+                                    <button class="btn-ghost" onclick="NotificationSystem.toast('Extension granted (7 days)', 'success')">Extend</button>
+                                    <button class="icon-btn" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                    <button class="btn-primary" onclick="NotificationSystem.simulateSend('Student ${book.studentId}', 'WhatsApp', 'Return Reminder')">Remind</button>
+                                ` : `
+                                    <button class="btn-ghost" disabled title="Admin Only">View Only</button>
+                                `}
                             </div>
                         </div>
                     `).join('')}
@@ -49,15 +54,20 @@ const LoginView = {
         if (topNav) topNav.style.display = 'none';
         document.body.classList.add('login-page');
 
+        this.showLoginForm();
+    },
+
+    showLoginForm() {
+        const container = document.getElementById('view-container');
         container.innerHTML = `
             <div class="login-wrapper">
                 <div class="login-card stat-card">
-                    <div class="logo-section" style="margin-bottom: 32px; justify-content: center;">
+                    <div class="logo-section" style="margin-bottom: 24px; justify-content: center;">
                         <div class="logo-icon">☕</div>
                         <h1>CoFee<span>App</span></h1>
                     </div>
                     <h2>Welcome Back</h2>
-                    <p class="user-role" style="margin-bottom: 32px;">Please sign in to continue to Team 3 Dashboard.</p>
+                    <p class="user-role" style="margin-bottom: 24px;">Please sign in to continue.</p>
                     
                     <div id="login-error" class="badge badge-rose" style="display: none; width: 100%; margin-bottom: 20px; text-transform: none;"></div>
                     
@@ -70,14 +80,71 @@ const LoginView = {
                             <p class="user-role font-sm" style="margin-bottom: 8px;">Password</p>
                             <input type="password" id="password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••">
                         </div>
-                        <button class="btn-primary" style="margin-top: 16px; padding: 14px;" onclick="LoginView.handleLogin()">Sign In</button>
-                        <button class="btn-ghost" style="padding: 12px; border: 1px dashed var(--accent-blue);" onclick="LoginView.autoLogin()">Quick Admin Entry</button>
+                        <button class="btn-primary" style="margin-top: 8px; padding: 14px;" onclick="LoginView.handleLogin()">Sign In</button>
+                        <p style="text-align: center; font-size: 14px; margin-top: 8px;">Don't have an account? <a href="#" onclick="LoginView.showRegisterForm()" style="color: var(--accent-blue); font-weight: 600;">Sign Up</a></p>
+                        <button class="btn-ghost" style="padding: 10px; border: 1px dashed var(--accent-blue); font-size: 12px;" onclick="LoginView.autoLogin()">Quick Admin Entry</button>
                     </div>
-                    
                 </div>
             </div>
         `;
-        lucide.createIcons();
+    },
+
+    showRegisterForm() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+            <div class="login-wrapper">
+                <div class="login-card stat-card">
+                    <div class="logo-section" style="margin-bottom: 24px; justify-content: center;">
+                        <div class="logo-icon">☕</div>
+                        <h1>CoFee<span>App</span></h1>
+                    </div>
+                    <h2>Create Account</h2>
+                    <p class="user-role" style="margin-bottom: 24px;">Sign up for Team 3 Management.</p>
+                    
+                    <div id="register-error" class="badge badge-rose" style="display: none; width: 100%; margin-bottom: 20px; text-transform: none;"></div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 16px; text-align: left;">
+                        <div>
+                            <p class="user-role font-sm" style="margin-bottom: 8px;">Full Name</p>
+                            <input type="text" id="reg-name" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="John Doe">
+                        </div>
+                        <div>
+                            <p class="user-role font-sm" style="margin-bottom: 8px;">Username</p>
+                            <input type="text" id="reg-username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="johndoe">
+                        </div>
+                        <div>
+                            <p class="user-role font-sm" style="margin-bottom: 8px;">Password</p>
+                            <input type="password" id="reg-password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••">
+                        </div>
+                        <button class="btn-primary" style="margin-top: 8px; padding: 14px;" onclick="LoginView.handleRegister()">Register</button>
+                        <p style="text-align: center; font-size: 14px; margin-top: 8px;">Already have an account? <a href="#" onclick="LoginView.showLoginForm()" style="color: var(--accent-blue); font-weight: 600;">Login</a></p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    handleRegister() {
+        const name = document.getElementById('reg-name').value.trim();
+        const user = document.getElementById('reg-username').value.trim().toLowerCase();
+        const pass = document.getElementById('reg-password').value;
+        const errorEl = document.getElementById('register-error');
+
+        if (!name || !user || !pass) {
+            errorEl.textContent = "All fields are required";
+            errorEl.style.display = 'block';
+            return;
+        }
+
+        const result = AuthService.register(name, user, pass);
+        if (result.success) {
+            NotificationSystem.toast(result.message, 'success');
+            this.showLoginForm();
+            document.getElementById('username').value = user;
+        } else {
+            errorEl.textContent = result.message;
+            errorEl.style.display = 'block';
+        }
     },
 
     resetSystem() {
@@ -118,6 +185,10 @@ const LoginView = {
 
 const AdminView = {
     render() {
+        if (!AuthService.isAdmin()) {
+            this.renderAccessDenied();
+            return;
+        }
         const data = StorageService.getData();
         const container = document.getElementById('view-container');
         container.innerHTML = `
@@ -153,7 +224,7 @@ const AdminView = {
             <div class="section">
                 <h3>Attendance Summary (Manual Entry)</h3>
                 <div class="stat-card" style="margin-top: 16px;">
-                    <div class="attendance-setup" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="attendance-setup grid-responsive" style="gap: 20px;">
                         <div class="student-select">
                             <p class="user-role" style="margin-bottom: 10px;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;"></p>
                             <div class="student-presence-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
@@ -170,7 +241,7 @@ const AdminView = {
                         </div>
                         <div class="topic-setup">
                             <p class="user-role" style="margin-bottom: 10px;">Topics Covered Today:</p>
-                            <textarea id="topics-covered" class="btn-ghost" style="width: 100%; height: 160px; padding: 12px; resize: none;" placeholder="e.g. Algebra - Page 45-50..."></textarea>
+                            <textarea id="topics-covered" class="btn-ghost" style="width: 100%; height: 160px; padding: 12px; resize: vertical;" placeholder="e.g. Algebra - Page 45-50..."></textarea>
                             <button class="btn-primary" style="margin-top: 12px; width: 100%;" onclick="AdminView.saveAttendance()">Save & Notify Parents</button>
                         </div>
                     </div>
@@ -204,6 +275,21 @@ const AdminView = {
 
         NotificationSystem.toast(`Attendance for ${date} saved and parents notified!`, 'success');
         NotificationSystem.simulateSend('Parents Group', 'WhatsApp', `Daily Update: ${document.getElementById('topics-covered').value}`);
+    },
+
+    renderAccessDenied() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+            <div class="view-header" style="text-align: center; padding-top: 60px;">
+                <div class="stat-icon" style="margin: 0 auto 24px; width: 80px; height: 80px; font-size: 40px; background: rgba(244, 63, 94, 0.1); color: var(--accent-rose);">
+                    <i data-lucide="shield-alert"></i>
+                </div>
+                <h2>Access Denied</h2>
+                <p>Only administrators can enter this panel.</p>
+                <button class="btn-primary" onclick="switchView('dashboard')" style="max-width: 200px; margin: 32px auto 0;">Return to Dashboard</button>
+            </div>
+        `;
+        lucide.createIcons();
     }
 };
 
@@ -221,7 +307,7 @@ const AdminStudentsView = {
             </div>
 
              <div class="section">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                <div class="grid-responsive" style="gap: 32px;">
                     <div class="stat-card">
                         <h3>Register New Student</h3>
                         <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
@@ -235,9 +321,9 @@ const AdminStudentsView = {
 
                     <div class="stat-card">
                         <h3>Registered Students</h3>
-                        <div class="alerts-list" style="margin-top: 24px; max-height: 400px; overflow-y: auto;">
+                        <div class="alerts-list" style="margin-top: 24px; max-height: 400px; overflow-y: auto; padding-right: 8px;">
                             ${data.students.map(s => `
-                                <div class="alert-item" style="padding: 12px;">
+                                <div class="alert-item" style="padding: 12px; gap: 12px;">
                                     <div class="alert-content">
                                         <p class="alert-msg" style="font-size: 14px;">${s.name}</p>
                                     </div>
@@ -288,6 +374,7 @@ const AdminStudentsView = {
 const FeesView = {
     render() {
         const data = StorageService.getData();
+        const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
             <div class="view-header">
@@ -304,8 +391,10 @@ const FeesView = {
                                 <p class="user-role">Student: ${LibraryView.getStudentName(f.studentId)} | Status: ${f.status}</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="icon-btn" onclick="FeesView.deleteItem(${f.id})" title="Delete Record"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('Parent ${f.studentId}', 'WhatsApp', 'Fee Reminder')">Send Reminder</button>
+                                ${isAdmin ? `
+                                    <button class="icon-btn" onclick="FeesView.deleteItem(${f.id})" title="Delete Record"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                    <button class="btn-primary" onclick="NotificationSystem.simulateSend('Parent ${f.studentId}', 'WhatsApp', 'Fee Reminder')">Send Reminder</button>
+                                ` : ''}
                             </div>
                         </div>
                     `).join('')}
@@ -327,6 +416,7 @@ const FeesView = {
 const WorksheetsView = {
     render() {
         const data = StorageService.getData();
+        const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
            <div class="view-header">
@@ -343,8 +433,10 @@ const WorksheetsView = {
                                <p class="user-role">Difficulty: ${w.difficulty}</p>
                            </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="icon-btn" onclick="WorksheetsView.deleteItem(${w.id})" title="Delete Worksheet"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                <button class="btn-ghost" onclick="NotificationSystem.simulateSend('Team 3 Members', 'WhatsApp', 'New Worksheet Alert')">Announce</button>
+                                ${isAdmin ? `
+                                    <button class="icon-btn" onclick="WorksheetsView.deleteItem(${w.id})" title="Delete Worksheet"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                    <button class="btn-ghost" onclick="NotificationSystem.simulateSend('Team 3 Members', 'WhatsApp', 'New Worksheet Alert')">Announce</button>
+                                ` : ''}
                             </div>
                         </div>
                     `).join('')}
@@ -366,6 +458,7 @@ const WorksheetsView = {
 const NewspapersView = {
     render() {
         const data = StorageService.getData();
+        const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
            <div class="view-header">
@@ -381,8 +474,10 @@ const NewspapersView = {
                                <p class="user-role">Published: ${new Date(n.launched).toLocaleString()}</p>
                            </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="icon-btn" onclick="NewspapersView.deleteItem(${n.id})" title="Delete Newspaper"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('Members', 'WhatsApp', 'Newspaper Link')">Dispatch to Group</button>
+                                ${isAdmin ? `
+                                    <button class="icon-btn" onclick="NewspapersView.deleteItem(${n.id})" title="Delete Newspaper"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                    <button class="btn-primary" onclick="NotificationSystem.simulateSend('Members', 'WhatsApp', 'Newspaper Link')">Dispatch to Group</button>
+                                ` : ''}
                             </div>
                         </div>
                     `).join('')}
@@ -464,60 +559,64 @@ const ProfileView = {
                 </div>
             </div>
 
-            <div class="profile-layout" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px; margin-top: 32px;">
+            <div class="profile-layout">
                 <div class="profile-sidebar">
-                    <div class="stat-card" style="padding: 40px; text-align: center;">
-                        <div class="user-avatar" style="width: 120px; height: 120px; font-size: 48px; margin: 0 auto 24px; box-shadow: 0 10px 40px var(--accent-blue-glow);">
+                    <div class="stat-card profile-card" style="text-align: center;">
+                        <div class="user-avatar profile-avatar">
                             ${student.name.charAt(0)}
                         </div>
-                        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">${student.name}</h1>
-                        <p class="user-role" style="font-size: 16px; margin-bottom: 32px; opacity: 0.6;">Student ID: #TS3-${student.id.toString().padStart(3, '0')}</p>
+                        <h1 class="profile-name">${student.name}</h1>
+                        <p class="user-role profile-id">Student ID: #TS3-${student.id.toString().padStart(3, '0')}</p>
                         
-                        <div style="text-align: left; background: var(--bg-accent); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+                        <div class="parent-info-card">
                             <div style="margin-bottom: 24px;">
-                                <p class="user-role" style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Parent / Guardian</p>
-                                <p style="font-size: 18px; font-weight: 600;">${student.parentName}</p>
+                                <p class="user-role font-xs">Parent / Guardian</p>
+                                <p class="parent-name">${student.parentName}</p>
                             </div>
                             <div style="margin-bottom: 24px;">
-                                <p class="user-role" style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Contact</p>
-                                <p style="font-size: 18px; font-weight: 600;">${student.parentPhone}</p>
+                                <p class="user-role font-xs">Contact</p>
+                                <p class="parent-phone">${student.parentPhone}</p>
                             </div>
                             <div>
-                                <p class="user-role" style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Email</p>
-                                <p style="font-size: 16px; font-weight: 600; opacity: 0.8; word-break: break-all;">${student.parentEmail}</p>
+                                <p class="user-role font-xs">Email</p>
+                                <p class="parent-email">${student.parentEmail}</p>
                             </div>
                         </div>
 
-                        <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr; gap: 12px;">
-                            <button class="btn-primary" onclick="NotificationSystem.simulateSend('${student.name}', 'WhatsApp', 'Direct Message')">Message Student</button>
-                            <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Call Invitation')">Call Parent</button>
+                        <div class="profile-actions">
+                            ${AuthService.isAdmin() ? `
+                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('${student.name}', 'WhatsApp', 'Direct Message')">Message Student</button>
+                                <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Call Invitation')">Call Parent</button>
+                            ` : `
+                                <button class="btn-ghost" disabled>Messages Restricted to Admin</button>
+                            `}
                         </div>
                     </div>
                 </div>
 
                 <div class="profile-stats">
                     <div style="margin-top: 0;">
-                        <h3 style="margin-bottom: 20px; font-weight: 600;">Attendance Summary</h3>
-                        <div class="stat-card" style="display: flex; align-items: center; gap: 32px;">
+                        <h3 class="section-title">Attendance Summary</h3>
+                        <div class="stat-card attendance-card">
                             <div class="circular-progress" style="--percent: ${attendanceRate}">
                                 <span class="value">${attendanceRate}%</span>
                             </div>
                             <div class="stat-info">
-                                <p class="user-role" style="font-size: 14px; margin-bottom: 4px;">Presence rate for April 2026</p>
-                                <p style="font-size: 16px; font-weight: 600;">Target: 95% | Current: ${attendanceRate}%</p>
+                                <p class="user-role font-sm">Presence rate for April 2026</p>
+                                <p class="stat-detail">Target: 95% | Current: ${attendanceRate}%</p>
                             </div>
                         </div>
                     </div>
 
                     <div style="margin-top: 40px;">
-                        <h3 style="margin-bottom: 20px; font-weight: 600;">Subject Performance</h3>
+                        <h3 class="section-title">Subject Performance</h3>
                         <div class="stat-card">
                             <div class="grades-list" style="display: flex; flex-direction: column; gap: 24px;">
                                 ${grades.map(g => `
                                     <div class="grade-item" style="padding: 0;">
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                            <span style="font-size: 15px; font-weight: 600;">${g.subject}</span>
-                                            <span style="font-size: 15px; font-weight: 700; color: var(--accent-blue);">${g.score}/${g.max}</span>
+                                            <span class="subject-name">${g.subject}</span>
+                                            <span class="subject-score">${g.score}/${g.max}</span>
                                         </div>
                                         <div class="progress-container" style="height: 10px;">
                                             <div class="progress-bar" style="width: ${g.score}%; background: ${g.score > 80 ? 'var(--accent-emerald)' : 'var(--accent-blue)'}; box-shadow: 0 0 10px ${g.score > 80 ? 'rgba(16,185,129,0.3)' : 'var(--accent-blue-glow)'}"></div>

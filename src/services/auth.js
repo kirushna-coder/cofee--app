@@ -28,6 +28,28 @@ const AuthService = {
         return { success: false, message: 'Invalid username or password' };
     },
 
+    register(name, username, password) {
+        const data = StorageService.getData();
+        
+        // Check if username exists
+        if (data.users.find(u => u.username === username)) {
+            return { success: false, message: 'Username already exists' };
+        }
+
+        const newUser = {
+            id: 'u' + Date.now(),
+            name,
+            username,
+            password,
+            role: 'user' // Default role
+        };
+
+        data.users.push(newUser);
+        StorageService.saveData(data);
+
+        return { success: true, message: 'Registration successful! Please login.' };
+    },
+
     logout() {
         sessionStorage.removeItem(this.USER_SESSION_KEY);
         window.location.reload(); // Refresh to clear all app state
