@@ -1,4 +1,4 @@
-﻿/**
+/**
  * CoFee App - Modular View Components
  */
 
@@ -642,12 +642,15 @@ const StudentsView = {
                                 <p class="alert-msg">${s.name}</p>
                                 ${isAdmin
                                     ? `<p class="user-role">Parent: ${s.parentName} | ${s.parentPhone}</p>`
-                                    : `<p class="user-role" style="font-size: 12px;">Student ID: #TS3-${s.id.toString().padStart(3,'0')}</p>`
+                                    : `<p class="user-role" style="font-size: 12px; margin-bottom: 6px;">Student ID: #TS3-${s.id.toString().padStart(3,'0')}</p>
+                                       <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-secondary); font-size: 10px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border-color); width: fit-content; padding: 4px 8px;">
+                                            <i data-lucide="lock" style="width:10px;height:10px;"></i> Profile: Admin Only
+                                       </span>`
                                 }
                             </div>
                             ${isAdmin
                                 ? `<button class="btn-ghost" onclick="switchView('profile', ${s.id})">View Profile</button>`
-                                : `<span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-secondary); font-size: 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap;"><i data-lucide="lock" style="width:10px;height:10px;"></i> Profile: Admin Only</span>`
+                                : ``
                             }
                         </div>
                     `).join('')}
