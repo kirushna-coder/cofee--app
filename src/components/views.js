@@ -292,6 +292,7 @@ const FeesView = {
         container.innerHTML = `
             <div class="view-header">
                 <h2>Fee Status</h2>
+                <p>Monitor pending and unpaid school fees.</p>
             </div>
             <div class="section">
                 <div class="alerts-list">
@@ -330,6 +331,7 @@ const WorksheetsView = {
         container.innerHTML = `
            <div class="view-header">
                <h2>Worksheets & Games</h2>
+               <p>Access and announce new educational resources.</p>
            </div>
            <div class="section">
                <div class="alerts-list">
@@ -462,27 +464,27 @@ const ProfileView = {
                 </div>
             </div>
 
-            <div class="profile-layout" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 32px; margin-top: 32px;">
+            <div class="profile-layout" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px; margin-top: 32px;">
                 <div class="profile-sidebar">
                     <div class="stat-card" style="padding: 40px; text-align: center;">
-                        <div class="user-avatar" style="width: 100px; height: 100px; font-size: 32px; background: var(--accent-blue); margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 0 30px var(--accent-blue-glow);">
+                        <div class="user-avatar" style="width: 120px; height: 120px; font-size: 48px; margin: 0 auto 24px; box-shadow: 0 10px 40px var(--accent-blue-glow);">
                             ${student.name.charAt(0)}
                         </div>
-                        <h1 style="font-size: 28px; margin-bottom: 8px;">${student.name}</h1>
-                        <p class="user-role" style="font-size: 16px; margin-bottom: 32px;">Student ID: #TS3-${student.id.toString().padStart(3, '0')}</p>
+                        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">${student.name}</h1>
+                        <p class="user-role" style="font-size: 16px; margin-bottom: 32px; opacity: 0.6;">Student ID: #TS3-${student.id.toString().padStart(3, '0')}</p>
                         
-                        <div style="text-align: left; background: var(--glass-bg); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                            <div style="margin-bottom: 20px;">
-                                <p class="user-role" style="font-size: 10px; text-transform: uppercase;">Parent / Guardian</p>
-                                <p style="font-size: 16px; font-weight: 600;">${student.parentName}</p>
+                        <div style="text-align: left; background: var(--bg-accent); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+                            <div style="margin-bottom: 24px;">
+                                <p class="user-role" style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Parent / Guardian</p>
+                                <p style="font-size: 18px; font-weight: 600;">${student.parentName}</p>
                             </div>
-                            <div style="margin-bottom: 20px;">
-                                <p class="user-role" style="font-size: 10px; text-transform: uppercase;">Contact</p>
-                                <p style="font-size: 16px; font-weight: 600;">${student.parentPhone}</p>
+                            <div style="margin-bottom: 24px;">
+                                <p class="user-role" style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Contact</p>
+                                <p style="font-size: 18px; font-weight: 600;">${student.parentPhone}</p>
                             </div>
                             <div>
-                                <p class="user-role" style="font-size: 10px; text-transform: uppercase;">Email</p>
-                                <p style="font-size: 16px; font-weight: 600; word-break: break-all;">${student.parentEmail}</p>
+                                <p class="user-role" style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Email</p>
+                                <p style="font-size: 16px; font-weight: 600; opacity: 0.8; word-break: break-all;">${student.parentEmail}</p>
                             </div>
                         </div>
 
@@ -494,31 +496,31 @@ const ProfileView = {
                 </div>
 
                 <div class="profile-stats">
-                    <div class="section" style="margin-top: 0;">
-                        <h3>Attendance Summary</h3>
-                        <div class="stat-card" style="margin-top: 16px; display: flex; align-items: center; gap: 32px;">
+                    <div style="margin-top: 0;">
+                        <h3 style="margin-bottom: 20px; font-weight: 600;">Attendance Summary</h3>
+                        <div class="stat-card" style="display: flex; align-items: center; gap: 32px;">
                             <div class="circular-progress" style="--percent: ${attendanceRate}">
                                 <span class="value">${attendanceRate}%</span>
                             </div>
                             <div class="stat-info">
-                                <p class="user-role">Presence rate for April 2026</p>
-                                <p style="font-size: 14px; margin-top: 8px;">Target: 95% | Current: ${attendanceRate}%</p>
+                                <p class="user-role" style="font-size: 14px; margin-bottom: 4px;">Presence rate for April 2026</p>
+                                <p style="font-size: 16px; font-weight: 600;">Target: 95% | Current: ${attendanceRate}%</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="section">
-                        <h3>Subject Performance</h3>
-                        <div class="stat-card" style="margin-top: 16px;">
-                            <div class="grades-list" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="margin-top: 40px;">
+                        <h3 style="margin-bottom: 20px; font-weight: 600;">Subject Performance</h3>
+                        <div class="stat-card">
+                            <div class="grades-list" style="display: flex; flex-direction: column; gap: 24px;">
                                 ${grades.map(g => `
-                                    <div class="grade-item">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                            <span style="font-size: 14px; font-weight: 600;">${g.subject}</span>
-                                            <span style="font-size: 14px; color: var(--accent-blue);">${g.score}/${g.max}</span>
+                                    <div class="grade-item" style="padding: 0;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                            <span style="font-size: 15px; font-weight: 600;">${g.subject}</span>
+                                            <span style="font-size: 15px; font-weight: 700; color: var(--accent-blue);">${g.score}/${g.max}</span>
                                         </div>
-                                        <div class="progress-container">
-                                            <div class="progress-bar" style="width: ${g.score}%; background: ${g.score > 80 ? 'var(--accent-emerald)' : 'var(--accent-blue)'}"></div>
+                                        <div class="progress-container" style="height: 10px;">
+                                            <div class="progress-bar" style="width: ${g.score}%; background: ${g.score > 80 ? 'var(--accent-emerald)' : 'var(--accent-blue)'}; box-shadow: 0 0 10px ${g.score > 80 ? 'rgba(16,185,129,0.3)' : 'var(--accent-blue-glow)'}"></div>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -527,6 +529,7 @@ const ProfileView = {
                     </div>
                 </div>
             </div>
+        `;
         `;
         lucide.createIcons();
     }

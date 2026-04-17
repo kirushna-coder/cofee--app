@@ -9,9 +9,9 @@ const Dashboard = {
         
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="dashboard-header">
-                <h2 class="view-title">Team 3 Overview</h2>
-                <p class="view-subtitle">Monitor and manage reminders for classes, fees, and library books.</p>
+            <div class="view-header">
+                <h2>Team 3 Overview</h2>
+                <p>Monitor and manage reminders for classes, fees, and library books.</p>
             </div>
 
             <div class="dashboard-grid">
