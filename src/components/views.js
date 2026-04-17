@@ -479,9 +479,14 @@ const FeesView = {
                                             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                                                 <span style="font-weight:700;font-size:15px;">&#8377;${f.amount.toLocaleString()}</span>
                                                 <span class="badge ${f.status === 'paid' ? 'badge-emerald' : f.status === 'unpaid' ? 'badge-rose' : 'badge-amber'}">${f.status}</span>
-                                                ${isAdmin && f.status !== 'paid' ? `
-                                                    <button class="btn-primary" style="padding:6px 14px;font-size:12px;" onclick="FeesView.markPaid(${f.id})"><i data-lucide="check" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Mark Paid</button>
-                                                    <button class="icon-btn" style="width:32px;height:32px;" onclick="FeesView.deleteItem(${f.id})" title="Delete"><i data-lucide="trash-2" style="color:var(--accent-rose);width:14px;height:14px;"></i></button>
+                                                ${f.status !== 'paid' ? `
+                                                    <button class="btn-primary" style="padding:6px 14px;font-size:12px;background:linear-gradient(135deg,#0070f3,#0051d4);" onclick="PaymentModal.show(${f.id}, '${s.name}', '${f.month}', ${f.amount})">
+                                                        <i data-lucide="credit-card" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Pay Now
+                                                    </button>
+                                                    ${isAdmin ? `
+                                                        <button class="btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="FeesView.markPaid(${f.id})"><i data-lucide="check" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Mark Paid</button>
+                                                        <button class="icon-btn" style="width:32px;height:32px;" onclick="FeesView.deleteItem(${f.id})" title="Delete"><i data-lucide="trash-2" style="color:var(--accent-rose);width:14px;height:14px;"></i></button>
+                                                    ` : '}
                                                 ` : ''}
                                             </div>
                                         </div>
@@ -864,6 +869,175 @@ const PerformanceView = {
     }
 };
 
+const PaymentModal = {
+    show(feeId, studentName, month, amount) {
+        // Remove any existing modal
+        const existing = document.getElementById('payment-overlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'payment-overlay';
+        overlay.className = 'payment-overlay';
+        overlay.innerHTML = `
+            <div class="payment-modal" id="payment-modal">
+                <div class="payment-header">
+                    <h3>Pay Fees</h3>
+                    <button class="close-btn" onclick="PaymentModal.close()">&times;</button>
+                </div>
+                <div class="payment-amount-display">
+                    <p class="student-name-lbl">${studentName}</p>
+                    <p class="amount-big">&#8377;${amount.toLocaleString()}</p>
+                    <p class="month-lbl">${month}</p>
+                </div>
+                <div class="payment-body">
+                    <div class="payment-methods">
+                        <button class="pay-method-btn active" id="pm-upi" onclick="PaymentModal.setMethod('upi')">
+                            <span class="pay-method-icon">&#128242;</span>UPI
+                        </button>
+                        <button class="pay-method-btn" id="pm-card" onclick="PaymentModal.setMethod('card')">
+                            <span class="pay-method-icon">&#128179;</span>Card
+                        </button>
+                        <button class="pay-method-btn" id="pm-net" onclick="PaymentModal.setMethod('net')">
+                            <span class="pay-method-icon">&#127968;</span>Net Banking
+                        </button>
+                    </div>
+                    <div id="pay-form-area">
+                        ${PaymentModal.getUpiForm()}
+                    </div>
+                    <button class="pay-now-btn" id="pay-now-btn" onclick="PaymentModal.processPayment(${feeId}, '${studentName}', '${month}', ${amount})">
+                        Pay &#8377;${amount.toLocaleString()}
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) PaymentModal.close(); });
+    },
+
+    currentMethod: 'upi',
+
+    setMethod(method) {
+        PaymentModal.currentMethod = method;
+        ['upi','card','net'].forEach(m => {
+            const btn = document.getElementById('pm-' + m);
+            if (btn) btn.classList.toggle('active', m === method);
+        });
+        const area = document.getElementById('pay-form-area');
+        if (!area) return;
+        if (method === 'upi')  area.innerHTML = PaymentModal.getUpiForm();
+        if (method === 'card') area.innerHTML = PaymentModal.getCardForm();
+        if (method === 'net')  area.innerHTML = PaymentModal.getNetForm();
+    },
+
+    getUpiForm() {
+        return `<div class="pay-input-group" style="margin-bottom: 20px;">
+            <div>
+                <label>UPI ID</label>
+                <input type="text" id="upi-id" placeholder="example@upi" autocomplete="off">
+            </div>
+        </div>`;
+    },
+
+    getCardForm() {
+        return `<div class="pay-input-group" style="margin-bottom: 20px;">
+            <div>
+                <label>Card Number</label>
+                <input type="text" id="card-num" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="off">
+            </div>
+            <div style="display:flex;gap:12px;">
+                <div style="flex:1;"><label>Expiry</label><input type="text" id="card-exp" placeholder="MM/YY" maxlength="5"></div>
+                <div style="flex:1;"><label>CVV</label><input type="password" id="card-cvv" placeholder="&#9679;&#9679;&#9679;" maxlength="3"></div>
+            </div>
+            <div>
+                <label>Cardholder Name</label>
+                <input type="text" id="card-name" placeholder="Name on card">
+            </div>
+        </div>`;
+    },
+
+    getNetForm() {
+        return `<div class="pay-input-group" style="margin-bottom: 20px;">
+            <div>
+                <label>Select Bank</label>
+                <select id="net-bank">
+                    <option value="">-- Choose Bank --</option>
+                    <option>State Bank of India</option>
+                    <option>HDFC Bank</option>
+                    <option>ICICI Bank</option>
+                    <option>Axis Bank</option>
+                    <option>Kotak Mahindra Bank</option>
+                    <option>Bank of Baroda</option>
+                    <option>Punjab National Bank</option>
+                    <option>Canara Bank</option>
+                </select>
+            </div>
+        </div>`;
+    },
+
+    processPayment(feeId, studentName, month, amount) {
+        const btn = document.getElementById('pay-now-btn');
+        const formArea = document.getElementById('pay-form-area');
+        if (!btn || !formArea) return;
+
+        // Basic validation
+        if (PaymentModal.currentMethod === 'upi') {
+            const val = (document.getElementById('upi-id') || {}).value || '';
+            if (!val.includes('@')) { NotificationSystem.toast('Please enter a valid UPI ID', 'error'); return; }
+        } else if (PaymentModal.currentMethod === 'card') {
+            const num = (document.getElementById('card-num') || {}).value || '';
+            if (num.replace(/\s/g,'').length < 12) { NotificationSystem.toast('Please enter a valid card number', 'error'); return; }
+        } else if (PaymentModal.currentMethod === 'net') {
+            const bank = (document.getElementById('net-bank') || {}).value || '';
+            if (!bank) { NotificationSystem.toast('Please select a bank', 'error'); return; }
+        }
+
+        // Processing animation
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+        formArea.innerHTML = `<div style="text-align:center;padding:24px 0;color:var(--text-secondary);">
+            <div style="width:40px;height:40px;border:3px solid var(--border-color);border-top-color:var(--accent-blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
+            <p>Securely processing your payment...</p>
+        </div>`;
+
+        setTimeout(() => {
+            // Mark as paid in storage
+            const data = StorageService.getData();
+            const fee = data.fees.find(f => f.id === feeId);
+            if (fee) { fee.status = 'paid'; StorageService.saveData(data); }
+
+            // Show success
+            const modal = document.getElementById('payment-modal');
+            if (!modal) return;
+            const txnId = 'TXN' + Date.now().toString().slice(-8).toUpperCase();
+            const now = new Date().toLocaleString('en-IN');
+            modal.innerHTML = `
+                <div class="payment-success">
+                    <div class="success-checkmark"><i data-lucide="check-circle" style="width:36px;height:36px;color:var(--accent-emerald);"></i></div>
+                    <h3>Payment Successful!</h3>
+                    <p>Fee paid for <strong>${studentName}</strong></p>
+                    <div class="receipt-card">
+                        <p style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--text-secondary);">RECEIPT</p>
+                        <div class="receipt-row"><span>Month</span><span>${month}</span></div>
+                        <div class="receipt-row"><span>Amount Paid</span><span style="color:var(--accent-emerald);">&#8377;${amount.toLocaleString()}</span></div>
+                        <div class="receipt-row"><span>Method</span><span>${PaymentModal.currentMethod.toUpperCase()}</span></div>
+                        <hr class="receipt-divider">
+                        <div class="receipt-row"><span>Transaction ID</span><span style="font-size:11px;">${txnId}</span></div>
+                        <div class="receipt-row"><span>Date & Time</span><span style="font-size:11px;">${now}</span></div>
+                    </div>
+                    <button class="pay-now-btn" style="margin-top:20px;background:linear-gradient(135deg,var(--accent-emerald),#059669);" onclick="PaymentModal.close(); FeesView.render();">Close</button>
+                </div>
+            `;
+            lucide.createIcons();
+        }, 2200);
+    },
+
+    close() {
+        const el = document.getElementById('payment-overlay');
+        if (el) el.remove();
+    }
+};
+
+window.PaymentModal = PaymentModal;
 window.LibraryView = LibraryView;
 window.LoginView = LoginView;
 window.AdminView = AdminView;
