@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoFee App | Team 3 Management Dashboard</title>
+    <meta name="description" content="A premium school management and reminder system for Team 3.">
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">☕</div>
+                <h1>CoFee<span>App</span></h1>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="students">
+                    <i data-lucide="users"></i>
+                    <span>Students</span>
+                </button>
+                <button class="nav-item" data-view="library">
+                    <i data-lucide="book-open"></i>
+                    <span>Library</span>
+                </button>
+                <button class="nav-item" data-view="fees">
+                    <i data-lucide="credit-card"></i>
+                    <span>Fees</span>
+                </button>
+                <button class="nav-item" data-view="worksheets">
+                    <i data-lucide="file-text"></i>
+                    <span>Worksheets</span>
+                </button>
+                <button class="nav-item" data-view="newspapers">
+                    <i data-lucide="newspaper"></i>
+                    <span>Newspapers</span>
+                </button>
+                <button class="nav-item" data-view="blueprint">
+                    <i data-lucide="map"></i>
+                    <span>Campus Blueprint</span>
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-item" data-view="admin">
+                    <i data-lucide="settings"></i>
+                    <span>Admin Panel</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-info">
+                        <p class="user-name">Admin User</p>
+                        <p class="user-role">Team 3 Staff</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <div class="header-search">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search students, books, fees...">
+                </div>
+                <div class="header-actions">
+                    <div class="notification-wrapper">
+                        <button class="icon-btn notification-trigger" id="notif-btn">
+                            <i data-lucide="bell"></i>
+                            <span class="notification-badge" id="notif-badge">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notif-dropdown">
+                            <div class="dropdown-header">
+                                <h3>Notifications</h3>
+                                <button class="btn-ghost btn-sm" onclick="NotificationSystem.clearAll()">Clear All</button>
+                            </div>
+                            <div class="dropdown-body" id="notif-items">
+                                <!-- Alerts will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                    <button class="icon-btn">
+                        <i data-lucide="moon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div id="view-container" class="view-content fade-in">
+                <!-- Content will be injected here by main.js -->
+                <div class="loading">Loading Dashboard...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Overlay -->
+    <div id="toast-container"></div>
+
+    <!-- Services -->
+    <script src="src/services/storage.js"></script>
+    <script src="src/services/notificationSystem.js"></script>
+    
+    <!-- Components -->
+    <script src="src/components/dashboard.js"></script>
+    <script src="src/components/views.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
