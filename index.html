@@ -15,16 +15,17 @@
 </head>
 <body class="dark-theme">
     <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div class="nav-brand">
                 <div class="logo-section">
                     <div class="logo-icon">☕</div>
                     <h1>CoFee<span>App</span></h1>
                 </div>
             </div>
 
-            <nav class="sidebar-nav">
+            <nav class="nav-menu" id="nav-dropdown">
                 <button class="nav-item active" data-view="dashboard">
                     <i data-lucide="layout-dashboard"></i>
                     <span>Dashboard</span>
@@ -63,47 +64,40 @@
                 </button>
             </nav>
 
-            <div class="sidebar-footer">
+            <div class="nav-actions">
+                <div class="header-search desktop-only">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
                 <button class="icon-btn" id="theme-btn">
                     <i data-lucide="moon"></i>
                 </button>
+                <div class="notification-wrapper">
+                    <button class="icon-btn" id="notif-btn">
+                        <i data-lucide="bell"></i>
+                        <span class="notification-badge" id="notif-badge">0</span>
+                    </button>
+                    <div class="notification-dropdown" id="notif-dropdown">
+                        <div class="dropdown-header">
+                            <h3>Notifications</h3>
+                            <button class="btn-ghost btn-sm" onclick="NotificationSystem.clearAll()">Clear All</button>
+                        </div>
+                        <div class="dropdown-body" id="notif-items"></div>
+                    </div>
+                </div>
                 <div class="user-card" onclick="switchView('profile', AuthService.getUser().id)" style="cursor: pointer;">
                     <div class="user-avatar" id="nav-user-avatar">AD</div>
                 </div>
+                <button class="icon-btn" id="menu-toggle">
+                    <i data-lucide="menu"></i>
+                </button>
             </div>
-        </aside>
+        </header>
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <header class="content-header">
-                <div class="header-left">
-                    <button class="icon-btn" id="menu-toggle">
-                        <i data-lucide="menu"></i>
-                    </button>
-                    <div class="header-search">
-                        <i data-lucide="search"></i>
-                        <input type="text" placeholder="Search team info...">
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="notification-wrapper">
-                        <button class="icon-btn" id="notif-btn">
-                            <i data-lucide="bell"></i>
-                            <span class="notification-badge" id="notif-badge">0</span>
-                        </button>
-                        <div class="notification-dropdown" id="notif-dropdown">
-                            <div class="dropdown-header">
-                                <h3>Notifications</h3>
-                                <button class="btn-ghost btn-sm" onclick="NotificationSystem.clearAll()">Clear All</button>
-                            </div>
-                            <div class="dropdown-body" id="notif-items"></div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
             <div id="view-container" class="view-content fade-in">
-                <div class="loading">Loading...</div>
+                <div class="loading">Loading dashboard...</div>
             </div>
         </main>
     </div>

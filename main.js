@@ -33,15 +33,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Mobile Menu Toggle
+    // Mobile Menu Toggle - Slide Down
     const menuToggle = document.getElementById('menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
+    const navDropdown = document.getElementById('nav-dropdown');
 
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-open');
+    if (menuToggle && navDropdown) {
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navDropdown.classList.toggle('show');
+        });
+
+        // Close menu when clicking a nav item
+        const navLinks = navDropdown.querySelectorAll('.nav-item');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navDropdown.classList.remove('show');
+            });
         });
     }
+
+    // Close menu when clicking outside
+    window.addEventListener('click', () => {
+        if (navDropdown) navDropdown.classList.remove('show');
+    });
 
     // 4. Check for Inactivity
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
