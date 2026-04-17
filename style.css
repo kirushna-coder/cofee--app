@@ -76,8 +76,6 @@ body {
     justify-content: space-between;
     padding: 0 40px;
     z-index: 2000;
-    position: sticky;
-    top: 0;
 }
 
 .nav-brand {
