@@ -498,6 +498,10 @@ const NewspapersView = {
 
 const StudentsView = {
     render() {
+        if (!AuthService.isAdmin()) {
+            AdminView.renderAccessDenied();
+            return;
+        }
         const data = StorageService.getData();
         const container = document.getElementById('view-container');
         container.innerHTML = `
@@ -528,6 +532,11 @@ const StudentsView = {
 
 const ProfileView = {
     render(studentId) {
+        if (!AuthService.isAdmin()) {
+            AdminView.renderAccessDenied();
+            return;
+        }
+
         const data = StorageService.getData();
         const student = data.students.find(s => s.id === studentId);
         

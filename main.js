@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     navItems.forEach(item => {
         const view = item.getAttribute('data-view');
         
-        // Hide Admin Panel for non-admins
-        if (view === 'admin' && !isAdmin) {
+        // Hide Admin Panel and Students for non-admins
+        if ((view === 'admin' || view === 'students') && !isAdmin) {
             item.style.display = 'none';
         }
 
