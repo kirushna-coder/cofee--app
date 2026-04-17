@@ -509,25 +509,24 @@ const StudentsView = {
             <div class="view-header">
                 <h2>Student Roster</h2>
                 <p>Full list of students enrolled in Team 3.</p>
-                ${!isAdmin ? `<div class="badge badge-amber" style="margin-top: 8px; display: inline-flex; gap: 6px; align-items: center;"><i data-lucide="shield" style="width:12px;height:12px;"></i> Profile details are restricted to Admins</div>` : ''}
             </div>
             <div class="section">
                 <div class="alerts-list">
                     ${data.students.map(s => `
                         <div class="alert-item">
-                            <div class="user-avatar" style="width: 40px; height: 40px; background: var(--accent-blue); flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50; color: white; font-weight: 700;">
+                            <div class="user-avatar" style="width: 42px; height: 42px; background: var(--accent-blue); flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: 700; font-size: 18px;">
                                 ${s.name.charAt(0)}
                             </div>
                             <div class="alert-content">
                                 <p class="alert-msg">${s.name}</p>
                                 ${isAdmin
                                     ? `<p class="user-role">Parent: ${s.parentName} | ${s.parentPhone}</p>`
-                                    : `<p class="user-role" style="color: var(--accent-rose);"><i data-lucide="lock" style="width:11px;height:11px; display:inline-block; vertical-align: middle;"></i> Contact info hidden</p>`
+                                    : `<p class="user-role" style="font-size: 12px;">Student ID: #TS3-${s.id.toString().padStart(3,'0')}</p>`
                                 }
                             </div>
                             ${isAdmin
                                 ? `<button class="btn-ghost" onclick="switchView('profile', ${s.id})">View Profile</button>`
-                                : `<span class="badge badge-rose" style="font-size: 10px; white-space: nowrap;">Admin Only</span>`
+                                : `<span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-secondary); font-size: 10px; display: flex; align-items: center; gap: 4px; white-space: nowrap;"><i data-lucide="lock" style="width:10px;height:10px;"></i> Profile: Admin Only</span>`
                             }
                         </div>
                     `).join('')}
