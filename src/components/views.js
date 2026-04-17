@@ -383,9 +383,9 @@ const FeesView = {
 
         const studentSummaries = data.students.map(s => {
             const studentFees = data.fees.filter(f => f.studentId === s.id);
-            const totalDue = studentFees.filter(f => f.status !== 'paid').reduce((sum, f) => sum + f.amount, 0);
+            const totalDue  = studentFees.filter(f => f.status !== 'paid').reduce((sum, f) => sum + f.amount, 0);
             const totalPaid = studentFees.filter(f => f.status === 'paid').reduce((sum, f) => sum + f.amount, 0);
-            const hasUnpaid = studentFees.some(f => f.status === 'unpaid');
+            const hasUnpaid  = studentFees.some(f => f.status === 'unpaid');
             const hasPending = studentFees.some(f => f.status === 'pending');
             const statusColor = hasUnpaid ? 'var(--accent-rose)' : hasPending ? 'var(--accent-amber)' : 'var(--accent-emerald)';
             const statusLabel = hasUnpaid ? 'Unpaid' : hasPending ? 'Pending' : totalPaid > 0 ? 'Cleared' : 'No Records';
@@ -393,123 +393,128 @@ const FeesView = {
         });
 
         const totalOutstanding = data.fees.filter(f => f.status !== 'paid').reduce((sum, f) => sum + f.amount, 0);
-        const totalCollected = data.fees.filter(f => f.status === 'paid').reduce((sum, f) => sum + f.amount, 0);
+        const totalCollected   = data.fees.filter(f => f.status === 'paid').reduce((sum, f) => sum + f.amount, 0);
         const studentsWithDues = studentSummaries.filter(s => s.totalDue > 0).length;
 
-        container.innerHTML = `
-            <div class="view-header">
-                <h2>Fee Management</h2>
-                <p>Track and manage fee payments for all students.</p>
-            </div>
-            <div class="dashboard-grid" style="margin-bottom: 32px;">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(244,63,94,0.1); color: var(--accent-rose);"><i data-lucide="alert-circle"></i></div>
-                    <div class="stat-info"><h3>Total Outstanding</h3><p class="value" style="color: var(--accent-rose);">&#8377;${totalOutstanding.toLocaleString()}</p></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: var(--accent-emerald);"><i data-lucide="check-circle"></i></div>
-                    <div class="stat-info"><h3>Total Collected</h3><p class="value" style="color: var(--accent-emerald);">&#8377;${totalCollected.toLocaleString()}</p></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="users"></i></div>
-                    <div class="stat-info"><h3>Students with Dues</h3><p class="value">${studentsWithDues}</p></div>
-                </div>
-            </div>
-            ${isAdmin ? `
-            <div class="section">
-                <h3 style="margin-bottom: 16px; font-weight: 600;">Add Fee Record</h3>
-                <div class="stat-card">
-                    <div class="grid-responsive" style="gap: 16px;">
+        // Build fee rows per student
+        const buildFeeRows = (studentFees, student) => studentFees.map(f => {
+            const statusBadge = f.status === 'paid' ? 'badge-emerald' : f.status === 'unpaid' ? 'badge-rose' : 'badge-amber';
+            let actions = '';
+            if (f.status !== 'paid') {
+                const safeName  = student.name.replace(/'/g, "\\'");
+                const safeMonth = f.month.replace(/'/g, "\\'");
+                actions += `<button class="btn-primary" style="padding:6px 14px;font-size:12px;" onclick="PaymentModal.show(${f.id},'${safeName}','${safeMonth}',${f.amount})"><i data-lucide="credit-card" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Pay Now</button>`;
+                if (isAdmin) {
+                    actions += `<button class="btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="FeesView.markPaid(${f.id})"><i data-lucide="check" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Mark Paid</button>`;
+                    actions += `<button class="icon-btn" style="width:32px;height:32px;" onclick="FeesView.deleteItem(${f.id})" title="Delete"><i data-lucide="trash-2" style="color:var(--accent-rose);width:14px;height:14px;"></i></button>`;
+                }
+            }
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-primary);border-radius:var(--radius-sm);flex-wrap:wrap;gap:8px;">
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Student</p>
+                            <span style="font-weight:600;font-size:14px;">${f.month}</span>
+                            <span style="color:var(--text-secondary);font-size:12px;margin-left:8px;">Due: ${f.dueDate}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span style="font-weight:700;font-size:15px;">&#8377;${f.amount.toLocaleString()}</span>
+                            <span class="badge ${statusBadge}">${f.status}</span>
+                            ${actions}
+                        </div>
+                    </div>`;
+        }).join('');
+
+        const buildStudentCard = ({ student, studentFees, totalDue, totalPaid: paid, statusColor, statusLabel }) => {
+            const safeParent = student.parentName ? student.parentName.replace(/'/g, "\\'") : '';
+            const reminderBtn = isAdmin && totalDue > 0
+                ? `<button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.simulateSend('${safeParent}', 'WhatsApp', 'Fee Reminder')"><i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder</button>`
+                : '';
+            const dueText  = totalDue > 0 ? `&nbsp;&middot;&nbsp;<strong style="color:var(--accent-rose);">&#8377;${totalDue.toLocaleString()} due</strong>` : '';
+            const paidText = paid > 0 ? `&nbsp;&middot;&nbsp;<span style="color:var(--accent-emerald);">&#8377;${paid.toLocaleString()} paid</span>` : '';
+            const feeRows  = buildFeeRows(studentFees, student);
+            const feeBody  = feeRows
+                ? `<div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--border-color);">${feeRows}</div>`
+                : `<p class="user-role" style="font-size:13px;padding-top:12px;border-top:1px solid var(--border-color);">No fee records yet.</p>`;
+            return `<div class="stat-card" style="padding:20px 24px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;${studentFees.length > 0 ? 'margin-bottom:16px;' : ''}">
+                            <div style="display:flex;align-items:center;gap:14px;">
+                                <div class="user-avatar" style="width:46px;height:46px;font-size:20px;font-weight:700;flex-shrink:0;background:var(--accent-blue);">${student.name.charAt(0)}</div>
+                                <div>
+                                    <p style="font-weight:600;font-size:15px;margin-bottom:4px;">${student.name}</p>
+                                    <p class="user-role" style="font-size:12px;display:flex;align-items:center;gap:6px;">
+                                        <span style="width:8px;height:8px;border-radius:50%;background:${statusColor};display:inline-block;flex-shrink:0;"></span>
+                                        ${statusLabel}${dueText}${paidText}
+                                    </p>
+                                </div>
+                            </div>
+                            ${reminderBtn}
+                        </div>
+                        ${feeBody}
+                    </div>`;
+        };
+
+        const adminAddForm = isAdmin ? `
+            <div class="section">
+                <h3 style="margin-bottom:16px;font-weight:600;">Add Fee Record</h3>
+                <div class="stat-card">
+                    <div class="grid-responsive" style="gap:16px;">
+                        <div>
+                            <p class="user-role font-sm" style="margin-bottom:8px;">Student</p>
                             <select id="fee-student" class="btn-ghost" style="width:100%;padding:12px;font-size:14px;cursor:pointer;">
                                 <option value="">Select Student...</option>
                                 ${data.students.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
                             </select>
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Month</p>
+                            <p class="user-role font-sm" style="margin-bottom:8px;">Month</p>
                             <input type="text" id="fee-month" class="btn-ghost" style="width:100%;padding:12px;" placeholder="e.g. May 2026" value="${new Date().toLocaleString('default',{month:'long'})} ${new Date().getFullYear()}">
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Amount (&#8377;)</p>
+                            <p class="user-role font-sm" style="margin-bottom:8px;">Amount (&#8377;)</p>
                             <input type="number" id="fee-amount" class="btn-ghost" style="width:100%;padding:12px;" placeholder="1500" value="1500">
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Due Date</p>
-                            <input type="date" id="fee-due" class="btn-ghost" style="width:100%;padding:12px;" value="${new Date(Date.now() + 15*24*60*60*1000).toISOString().split('T')[0]}">
+                            <p class="user-role font-sm" style="margin-bottom:8px;">Due Date</p>
+                            <input type="date" id="fee-due" class="btn-ghost" style="width:100%;padding:12px;" value="${new Date(Date.now()+15*24*60*60*1000).toISOString().split('T')[0]}">
                         </div>
                     </div>
                     <button class="btn-primary" style="margin-top:16px;" onclick="FeesView.addFee()"><i data-lucide="plus" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>Add Fee Record</button>
                 </div>
+            </div>` : '';
+
+        container.innerHTML = `
+            <div class="view-header">
+                <h2>Fee Management</h2>
+                <p>Track and manage fee payments for all students.</p>
             </div>
-            ` : ''}
-            <div class="section">
-                <h3 style="margin-bottom: 16px; font-weight: 600;">Student-wise Fee Status</h3>
-                <div style="display: flex; flex-direction: column; gap: 16px;">
-                    ${studentSummaries.map(({ student, studentFees, totalDue, totalPaid: paid, statusColor, statusLabel }) => `
-                        <div class="stat-card" style="padding: 20px 24px;">
-                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;${studentFees.length > 0 ? 'margin-bottom:16px;' : ''}">
-                                <div style="display:flex;align-items:center;gap:14px;">
-                                    <div class="user-avatar" style="width:46px;height:46px;font-size:20px;font-weight:700;flex-shrink:0;background:var(--accent-blue);">${student.name.charAt(0)}</div>
-                                    <div>
-                                        <p style="font-weight:600;font-size:15px;margin-bottom:4px;">${student.name}</p>
-                                        <p class="user-role" style="font-size:12px;display:flex;align-items:center;gap:6px;">
-                                            <span style="width:8px;height:8px;border-radius:50%;background:${statusColor};display:inline-block;flex-shrink:0;"></span>
-                                            ${statusLabel}
-                                            ${totalDue > 0 ? `&nbsp;&middot;&nbsp;<strong style="color:var(--accent-rose);">&#8377;${totalDue.toLocaleString()} due</strong>` : ''}
-                                            ${paid > 0 ? `&nbsp;&middot;&nbsp;<span style="color:var(--accent-emerald);">&#8377;${paid.toLocaleString()} paid</span>` : ''}
-                                        </p>
-                                    </div>
-                                </div>
-                                ${isAdmin && totalDue > 0 ? `
-                                    <button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Fee Reminder')">
-                                        <i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder
-                                    </button>
-                                ` : ''}
-                            </div>
-                            ${studentFees.length > 0 ? `
-                                <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--border-color);">
-                                    ${studentFees.map(f => `
-                                        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-primary);border-radius:var(--radius-sm);flex-wrap:wrap;gap:8px;">
-                                            <div>
-                                                <span style="font-weight:600;font-size:14px;">${f.month}</span>
-                                                <span style="color:var(--text-secondary);font-size:12px;margin-left:8px;">Due: ${f.dueDate}</span>
-                                            </div>
-                                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                                                <span style="font-weight:700;font-size:15px;">&#8377;${f.amount.toLocaleString()}</span>
-                                                <span class="badge ${f.status === 'paid' ? 'badge-emerald' : f.status === 'unpaid' ? 'badge-rose' : 'badge-amber'}">${f.status}</span>
-                                                ${f.status !== 'paid' ? `
-                                                    <button class="btn-primary" style="padding:6px 14px;font-size:12px;background:linear-gradient(135deg,#0070f3,#0051d4);" onclick="PaymentModal.show(${f.id}, '${s.name}', '${f.month}', ${f.amount})">
-                                                        <i data-lucide="credit-card" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Pay Now
-                                                    </button>
-                                                    ${isAdmin ? `
-                                                        <button class="btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="FeesView.markPaid(${f.id})"><i data-lucide="check" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Mark Paid</button>
-                                                        <button class="icon-btn" style="width:32px;height:32px;" onclick="FeesView.deleteItem(${f.id})" title="Delete"><i data-lucide="trash-2" style="color:var(--accent-rose);width:14px;height:14px;"></i></button>
-                                                    ` : '}
-                                                ` : ''}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            ` : `<p class="user-role" style="font-size:13px;padding-top:12px;border-top:1px solid var(--border-color);">No fee records yet.</p>`}
-                        </div>
-                    `).join('')}
+            <div class="dashboard-grid" style="margin-bottom:32px;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(244,63,94,0.1);color:var(--accent-rose);"><i data-lucide="alert-circle"></i></div>
+                    <div class="stat-info"><h3>Total Outstanding</h3><p class="value" style="color:var(--accent-rose);">&#8377;${totalOutstanding.toLocaleString()}</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:var(--accent-emerald);"><i data-lucide="check-circle"></i></div>
+                    <div class="stat-info"><h3>Total Collected</h3><p class="value" style="color:var(--accent-emerald);">&#8377;${totalCollected.toLocaleString()}</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="users"></i></div>
+                    <div class="stat-info"><h3>Students with Dues</h3><p class="value">${studentsWithDues}</p></div>
                 </div>
             </div>
-        `;
+            ${adminAddForm}
+            <div class="section">
+                <h3 style="margin-bottom:16px;font-weight:600;">Student-wise Fee Status</h3>
+                <div style="display:flex;flex-direction:column;gap:16px;">
+                    ${studentSummaries.map(s => buildStudentCard(s)).join('')}
+                </div>
+            </div>`;
         lucide.createIcons();
     },
 
     addFee() {
         const studentId = parseInt(document.getElementById('fee-student').value);
-        const month = document.getElementById('fee-month').value.trim();
+        const month  = document.getElementById('fee-month').value.trim();
         const amount = parseInt(document.getElementById('fee-amount').value);
         const dueDate = document.getElementById('fee-due').value;
-        if (!studentId || !month || !amount || !dueDate) {
-            NotificationSystem.toast('Please fill all fields', 'error');
-            return;
-        }
+        if (!studentId || !month || !amount || !dueDate) { NotificationSystem.toast('Please fill all fields', 'error'); return; }
         const data = StorageService.getData();
         const newId = data.fees.length > 0 ? Math.max(...data.fees.map(f => f.id)) + 1 : 301;
         data.fees.push({ id: newId, studentId, month, amount, dueDate, status: 'unpaid' });
@@ -521,23 +526,17 @@ const FeesView = {
     markPaid(id) {
         const data = StorageService.getData();
         const fee = data.fees.find(f => f.id === id);
-        if (fee) {
-            fee.status = 'paid';
-            StorageService.saveData(data);
-            NotificationSystem.toast('Payment marked as received!', 'success');
-            this.render();
-        }
+        if (fee) { fee.status = 'paid'; StorageService.saveData(data); NotificationSystem.toast('Payment marked as received!', 'success'); this.render(); }
     },
 
     deleteItem(id) {
-        if (confirm("Are you sure you want to delete this fee record?")) {
+        if (confirm("Delete this fee record?")) {
             StorageService.removeFromCollection('fees', id);
             NotificationSystem.toast("Fee record deleted", "success");
             this.render();
         }
     }
 };
-
 
 const WorksheetsView = {
     render() {
