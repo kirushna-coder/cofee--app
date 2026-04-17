@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 9; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 10; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
@@ -35,8 +35,18 @@ const DEFAULT_DATA = {
         { id: 202, studentId: 2, title: "Clean Code", borrowedDate: "2026-04-10", dueDate: "2026-04-24", status: "borrowed" }
     ],
     fees: [
-        { id: 301, studentId: 1, month: "April 2026", amount: 1500, dueDate: "2026-04-10", status: "unpaid" },
-        { id: 302, studentId: 2, month: "April 2026", amount: 1500, dueDate: "2026-04-25", status: "pending" }
+        { id: 301, studentId: 1, month: "April 2026", amount: 3000, dueDate: "2026-04-10", status: "unpaid" },
+        { id: 302, studentId: 2, month: "April 2026", amount: 3000, dueDate: "2026-04-25", status: "pending" },
+        { id: 303, studentId: 3, month: "April 2026", amount: 3000, dueDate: "2026-04-15", status: "unpaid" },
+        { id: 304, studentId: 4, month: "April 2026", amount: 3000, dueDate: "2026-04-10", status: "paid" },
+        { id: 305, studentId: 5, month: "April 2026", amount: 3000, dueDate: "2026-04-20", status: "unpaid" },
+        { id: 306, studentId: 6, month: "April 2026", amount: 3000, dueDate: "2026-04-12", status: "unpaid" },
+        { id: 307, studentId: 7, month: "April 2026", amount: 3000, dueDate: "2026-04-05", status: "pending" },
+        { id: 308, studentId: 8, month: "April 2026", amount: 3000, dueDate: "2026-04-18", status: "paid" },
+        { id: 309, studentId: 9, month: "April 2026", amount: 3000, dueDate: "2026-04-22", status: "unpaid" },
+        { id: 310, studentId: 10, month: "April 2026", amount: 3000, dueDate: "2026-04-15", status: "unpaid" },
+        { id: 311, studentId: 11, month: "April 2026", amount: 3000, dueDate: "2026-04-28", status: "pending" },
+        { id: 312, studentId: 12, month: "April 2026", amount: 3000, dueDate: "2026-04-10", status: "unpaid" }
     ],
     worksheets: [
         { id: 401, title: "Algebra Basics", launched: "2026-04-15", difficulty: "Medium" },
