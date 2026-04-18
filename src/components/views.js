@@ -74,11 +74,11 @@ const LoginView = {
                     <div style="display: flex; flex-direction: column; gap: 16px; text-align: left;">
                         <div>
                             <p class="user-role font-sm" style="margin-bottom: 8px;">Username</p>
-                            <input type="text" id="username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="admin">
+                            <input type="text" id="username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="admin" onkeydown="if(event.key === 'Enter') LoginView.handleLogin()">
                         </div>
                         <div>
                             <p class="user-role font-sm" style="margin-bottom: 8px;">Password</p>
-                            <input type="password" id="password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••">
+                            <input type="password" id="password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••" onkeydown="if(event.key === 'Enter') LoginView.handleLogin()">
                         </div>
                         <button class="btn-primary" style="margin-top: 8px; padding: 14px;" onclick="LoginView.handleLogin()">Sign In</button>
                         <p style="text-align: center; font-size: 14px; margin-top: 8px;">Don't have an account? <a href="#" onclick="LoginView.showRegisterForm()" style="color: var(--accent-blue); font-weight: 600;">Sign Up</a></p>
@@ -106,15 +106,15 @@ const LoginView = {
                     <div style="display: flex; flex-direction: column; gap: 16px; text-align: left;">
                         <div>
                             <p class="user-role font-sm" style="margin-bottom: 8px;">Full Name</p>
-                            <input type="text" id="reg-name" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="John Doe">
+                            <input type="text" id="reg-name" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="John Doe" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
                         </div>
                         <div>
                             <p class="user-role font-sm" style="margin-bottom: 8px;">Username</p>
-                            <input type="text" id="reg-username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="johndoe">
+                            <input type="text" id="reg-username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="johndoe" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
                         </div>
                         <div>
                             <p class="user-role font-sm" style="margin-bottom: 8px;">Password</p>
-                            <input type="password" id="reg-password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••">
+                            <input type="password" id="reg-password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
                         </div>
                         <button class="btn-primary" style="margin-top: 8px; padding: 14px;" onclick="LoginView.handleRegister()">Register</button>
                         <p style="text-align: center; font-size: 14px; margin-top: 8px;">Already have an account? <a href="#" onclick="LoginView.showLoginForm()" style="color: var(--accent-blue); font-weight: 600;">Login</a></p>
