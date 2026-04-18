@@ -16,19 +16,19 @@
 
 :root {
     /* Colors */
-    --bg-primary: #09090b;
-    --bg-secondary: #18181b;
-    --bg-sidebar: rgba(24, 24, 27, 0.75);
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --accent-blue: #4f46e5;
-    --accent-blue-subtle: #6366f1;
-    --accent-blue-glow: rgba(79, 70, 229, 0.3);
-    --accent-emerald: #10b981;
-    --accent-amber: #f59e0b;
-    --accent-rose: #f43f5e;
+    --bg-primary: #0B0F19; /* Midnight blue-black */
+    --bg-secondary: #111827; /* Rich dark slate */
+    --bg-sidebar: rgba(17, 24, 39, 0.85);
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --accent-blue: #3B82F6; /* Vibrant professional blue */
+    --accent-blue-subtle: #60A5FA;
+    --accent-blue-glow: rgba(59, 130, 246, 0.3);
+    --accent-emerald: #10B981;
+    --accent-amber: #F59E0B;
+    --accent-rose: #EF4444;
     --border-color: rgba(255, 255, 255, 0.08);
-    --glass-bg: rgba(24, 24, 27, 0.6);
+    --glass-bg: rgba(17, 24, 39, 0.6);
     --glass-border: rgba(255, 255, 255, 0.05);
     
     /* Layout */
