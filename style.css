@@ -753,6 +753,44 @@ body {
         width: 36px;
         height: 36px;
     }
+
+    .view-content {
+        padding: 16px 12px;
+    }
+
+    .view-header {
+        margin-bottom: 24px;
+    }
+
+    .view-header h2 {
+        font-size: 22px;
+        word-break: break-word;
+        hyphens: auto;
+    }
+
+    .view-header p {
+        font-size: 14px;
+    }
+
+    .dashboard-grid {
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    .stat-info .value {
+        font-size: 26px;
+    }
 }
 
 
