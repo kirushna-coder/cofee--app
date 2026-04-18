@@ -87,6 +87,9 @@
                 <div class="user-card" onclick="switchView('profile', AuthService.getUser().id)" style="cursor: pointer;">
                     <div class="user-avatar" id="nav-user-avatar">AD</div>
                 </div>
+                <button class="icon-btn" onclick="AuthService.logout()" title="Logout">
+                    <i data-lucide="log-out"></i>
+                </button>
                 <button class="icon-btn" id="menu-toggle">
                     <i data-lucide="menu"></i>
                 </button>
