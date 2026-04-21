@@ -155,8 +155,15 @@ const NotificationSystem = {
     simulateSend(target, channel, type, phoneNumber = null, autoTitle = '') {
         const msgText = autoTitle ? `Book Buddy Update: ${autoTitle}` : `Hello ${target}, regarding: ${type}.`;
         
-        if (channel === 'WhatsApp' && phoneNumber) {
-            this.sendDirectMessage(phoneNumber, msgText);
+        if (channel === 'WhatsApp') {
+            if (phoneNumber) {
+                this.sendDirectMessage(phoneNumber, msgText);
+            } else {
+                // For broadcasts (no phone number), open WhatsApp to let user pick contact/group
+                const url = `https://wa.me/?text=${encodeURIComponent(msgText)}`;
+                window.open(url, '_blank');
+                this.toast(`Opening WhatsApp for broadcast...`, 'info');
+            }
             return Promise.resolve();
         }
 

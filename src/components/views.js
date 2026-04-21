@@ -2158,7 +2158,7 @@ const Scheduler = {
                 </div>
 
                 <div style="display: flex; gap: 12px;">
-                    <button class="btn-primary" style="flex: 2; background: var(--accent-amber); height: 48px;" onclick="Scheduler.executeBroadcast(${task.id}, '${task.message.replace(/'/g, "\\'")}')">
+                    <button class="btn-primary" style="flex: 2; background: var(--accent-amber); height: 48px;" onclick="Scheduler.executeBroadcast(${task.id})">
                         <i data-lucide="send" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Broadcast Now
                     </button>
                     <button class="btn-ghost" style="flex: 1; height: 48px;" onclick="Scheduler.cancelTask(${task.id})">Skip</button>
@@ -2170,8 +2170,12 @@ const Scheduler = {
         lucide.createIcons();
     },
 
-    executeBroadcast(id, msg) {
-        NotificationSystem.simulateSend('All Members', 'WhatsApp', 'Scheduled Broadcast', null, msg);
+    executeBroadcast(id) {
+        const data = StorageService.getData();
+        const task = (data.scheduledMessages || []).find(m => m.id === id);
+        if (!task) return;
+
+        NotificationSystem.simulateSend('All Members', 'WhatsApp', 'Scheduled Broadcast', null, task.message);
         this.markAsSent(id);
         this.close();
     },
@@ -2203,3 +2207,4 @@ const Scheduler = {
 
 // Auto-init Scheduler
 Scheduler.init();
+window.Scheduler = Scheduler;
