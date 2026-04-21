@@ -46,10 +46,6 @@ const DEFAULT_DATA = {
         { id: 'admin', username: 'admin', password: 'p', role: 'admin', name: 'Admin User' }
     ]
 };
-    users: [
-        { id: 'admin', username: 'admin', password: 'p', role: 'admin', name: 'Admin User' }
-    ]
-};
 
 const StorageService = {
     init() {
