@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 15; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 16; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
@@ -54,6 +54,12 @@ const DEFAULT_DATA = {
     ],
     newspapers: [
         { id: 501, title: "Daily News - April 16", launched: "2026-04-16T08:00:00", url: "#" }
+    ],
+    events: [
+        { id: 601, title: "Annual Campus Meet", date: "2026-05-10", time: "10:00 AM", location: "Main Hall" }
+    ],
+    arrivals: [
+        { id: 701, title: "Python for Kids", date: "2026-04-20", type: "Book" }
     ],
     attendance: [], // Populated by admin
     attendanceRecords: [

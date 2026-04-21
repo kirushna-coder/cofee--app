@@ -173,6 +173,12 @@ function switchView(view, params = null) {
         case 'admin-students':
             AdminStudentsView.render();
             break;
+        case 'admin-users':
+            AdminUsersView.render();
+            break;
+        case 'events':
+            EventsView.render();
+            break;
         default:
             container.innerHTML = '<h2>Coming Soon</h2>';
     }

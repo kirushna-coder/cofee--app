@@ -152,8 +152,8 @@ const NotificationSystem = {
         this.toast(`Initiating call...`, 'info');
     },
 
-    simulateSend(target, channel, type, phoneNumber = null) {
-        const msgText = `Hello ${target}, regarding: ${type}.`;
+    simulateSend(target, channel, type, phoneNumber = null, autoTitle = '') {
+        const msgText = autoTitle ? `Book Buddy Update: ${autoTitle}` : `Hello ${target}, regarding: ${type}.`;
         
         if (channel === 'WhatsApp' && phoneNumber) {
             this.sendDirectMessage(phoneNumber, msgText);
@@ -167,6 +167,12 @@ const NotificationSystem = {
                 resolve();
             }, 2000);
         });
+    },
+
+    triggerUpdateBroadcast(type, itemTitle) {
+        if (confirm(`A new ${type} ("${itemTitle}") has been added. Would you like to broadcast this to all students/parents via WhatsApp Group?`)) {
+            this.simulateSend('All Members', 'WhatsApp', `New ${type} Arrival`, null, `Check out our new ${type}: ${itemTitle}!`);
+        }
     }
 };
 

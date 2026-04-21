@@ -48,6 +48,96 @@ const LibraryView = {
             </div>
         `;
         lucide.createIcons();
+        this.renderArrivals();
+    },
+
+    deleteItem(id) {
+        if (confirm("Delete this book record?")) {
+            StorageService.removeFromCollection('library', id);
+            NotificationSystem.toast("Book record deleted", "success");
+            this.render();
+        }
+    },
+
+    renderArrivals() {
+        const data = StorageService.getData();
+        const isAdmin = AuthService.isAdmin();
+        const container = document.getElementById('view-container');
+        
+        container.insertAdjacentHTML('beforeend', `
+            <div class="section" style="margin-top: 40px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>New Arrivals (Library)</h3>
+                    ${isAdmin ? `
+                        <button class="btn-primary" onclick="LibraryView.showAddArrivalModal()">
+                            <i data-lucide="plus-circle" style="width: 14px; height: 14px; margin-right: 8px;"></i> Log New Arrival
+                        </button>
+                    ` : ''}
+                </div>
+                <div class="alerts-list">
+                    ${data.arrivals.map(a => `
+                        <div class="alert-item">
+                            <div class="alert-indicator" style="background: var(--accent-blue)"></div>
+                            <div class="alert-content">
+                                <p class="alert-msg">${a.title}</p>
+                                <p class="user-role">${a.type} | Added: ${a.date}</p>
+                            </div>
+                            ${isAdmin ? `
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="icon-btn" onclick="LibraryView.deleteArrival(${a.id})"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                    <button class="btn-ghost" onclick="NotificationSystem.triggerUpdateBroadcast('New arrival', '${a.title}')">Announce</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div id="arrival-modal-overlay" class="payment-overlay" style="display: none; align-items: center; justify-content: center;">
+                <div class="stat-card" style="width: 100%; max-width: 400px; padding: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3>Log New Arrival</h3>
+                        <button class="icon-btn" onclick="document.getElementById('arrival-modal-overlay').style.display='none'"><i data-lucide="x"></i></button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <input type="text" id="arrival-title" class="btn-ghost" style="padding: 12px;" placeholder="Title / Name">
+                        <select id="arrival-type" class="btn-ghost" style="padding: 12px;">
+                            <option>Book</option>
+                            <option>Game</option>
+                            <option>Kit</option>
+                        </select>
+                        <button class="btn-primary" onclick="LibraryView.addArrival()">Add to Collection</button>
+                    </div>
+                </div>
+            </div>
+        `);
+        lucide.createIcons();
+    },
+
+    showAddArrivalModal() {
+        document.getElementById('arrival-modal-overlay').style.display = 'flex';
+    },
+
+    addArrival() {
+        const title = document.getElementById('arrival-title').value;
+        const type = document.getElementById('arrival-type').value;
+        if (!title) return;
+
+        const data = StorageService.getData();
+        const newArrival = { id: Date.now(), title, type, date: new Date().toISOString().split('T')[0] };
+        data.arrivals.unshift(newArrival);
+        StorageService.saveData(data);
+
+        NotificationSystem.toast(`${title} added to arrivals`, 'success');
+        this.render();
+        NotificationSystem.triggerUpdateBroadcast('New arrival', title);
+    },
+
+    deleteArrival(id) {
+        if (confirm("Delete this arrival record?")) {
+            StorageService.removeFromCollection('arrivals', id);
+            this.render();
+        }
     }
 };
 
@@ -217,12 +307,29 @@ const AdminView = {
                         <p class="user-role">Broadcast library books</p>
                     </div>
                 </div>
+                <div class="stat-card" onclick="switchView('admin-users')">
+                    <div class="stat-icon"><i data-lucide="users"></i></div>
+                    <div class="stat-info">
+                        <h3>System Users</h3>
+                        <p class="user-role">Manage admin accounts</p>
+                    </div>
+                </div>
                 <div class="stat-card" onclick="AuthService.logout()">
                     <div class="stat-icon"><i data-lucide="log-out"></i></div>
                     <div class="stat-info">
                         <h3>Logout</h3>
                         <p class="user-role">Securely sign out</p>
                     </div>
+                </div>
+            </div>
+
+            <div class="section" id="critical-library-section">
+                <h3 style="color: var(--accent-rose); display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="alert-octagon" style="width: 20px; height: 20px;"></i>
+                    Critical: Day 14+ Library Returns
+                </h3>
+                <div class="alerts-list" id="critical-library-list" style="margin-top: 16px;">
+                    <!-- Populated by renderCriticalLibrary -->
                 </div>
             </div>
 
@@ -271,6 +378,42 @@ const AdminView = {
         `;
         lucide.createIcons();
         this.renderAttendanceList();
+        this.renderCriticalLibrary();
+    },
+
+    renderCriticalLibrary() {
+        const data = StorageService.getData();
+        const container = document.getElementById('critical-library-list');
+        const now = new Date();
+        
+        const criticalItems = data.library.filter(b => {
+             const borrowedDate = new Date(b.borrowedDate);
+             const diffDays = Math.floor((now - borrowedDate) / (1000 * 60 * 60 * 24));
+             return diffDays >= 14;
+        });
+
+        if (criticalItems.length === 0) {
+            document.getElementById('critical-library-section').style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = criticalItems.map(item => {
+            const student = data.students.find(s => s.id === item.studentId);
+            const borrowedDate = new Date(item.borrowedDate);
+            const diffDays = Math.floor((now - borrowedDate) / (1000 * 60 * 60 * 24));
+            const msg = `Hello ${student.parentName}, a reminder that ${student.name} has had the book "${item.title}" for ${diffDays} days. Please return or swap it at the library tomorrow.`;
+            
+            return `
+                <div class="alert-item critical">
+                    <div class="alert-indicator"></div>
+                    <div class="alert-content">
+                        <p class="alert-msg">${student.name} - Day ${diffDays} reached</p>
+                        <p class="user-role">Book: "${item.title}" | Parent: ${student.parentName}</p>
+                    </div>
+                    <button class="btn-primary" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')">Message Parent</button>
+                </div>
+            `;
+        }).join('');
     },
 
     renderAttendanceList() {
@@ -347,6 +490,15 @@ const AdminView = {
         } else {
             notifySection.style.display = 'none';
             NotificationSystem.simulateSend('Parents Group', 'WhatsApp', `Daily Update: All present. ${topics}`);
+        }
+
+        // Automatic Topic/Update Trigger
+        if (topics.trim()) {
+            setTimeout(() => {
+                if (confirm(`Attendance saved. Would you like to trigger a broadcast for the topics covered today?`)) {
+                    NotificationSystem.simulateSend('All Members', 'WhatsApp', 'Topic Update', null, `Today's Learning: ${topics}`);
+                }
+            }, 500);
         }
     },
 
@@ -538,6 +690,91 @@ const AdminStudentsView = {
 
         NotificationSystem.toast(`${name} registered successfully!`, "success");
         switchView('students');
+    }
+};
+
+const AdminUsersView = {
+    render() {
+        if (!AuthService.isAdmin()) {
+            AdminView.renderAccessDenied();
+            return;
+        }
+        const data = StorageService.getData();
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+                <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
+                <div>
+                    <h2>System User Management</h2>
+                    <p>Add or modify administrative accounts.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="grid-responsive" style="gap: 32px;">
+                    <div class="stat-card">
+                        <h3>Create Admin User</h3>
+                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+                            <input type="text" id="user-display-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
+                            <input type="text" id="user-username" class="btn-ghost" style="padding: 12px;" placeholder="Username">
+                            <input type="password" id="user-password" class="btn-ghost" style="padding: 12px;" placeholder="Password">
+                            <button class="btn-primary" onclick="AdminUsersView.addUser()">Add User</button>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Existing Admins</h3>
+                        <div class="alerts-list" style="margin-top: 24px;">
+                            ${data.users.map(u => `
+                                <div class="alert-item" style="padding: 12px; gap: 12px;">
+                                    <div class="alert-content">
+                                        <p class="alert-msg" style="font-size: 14px;">${u.name}</p>
+                                        <p class="user-role" style="font-size: 10px;">@${u.username} | ${u.role.toUpperCase()}</p>
+                                    </div>
+                                    <button class="icon-btn" onclick="AdminUsersView.deleteUser('${u.id}')" ${u.id === 'admin' ? 'disabled' : ''} title="Delete User">
+                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    },
+
+    addUser() {
+        const name = document.getElementById('user-display-name').value;
+        const username = document.getElementById('user-username').value;
+        const password = document.getElementById('user-password').value;
+
+        if (!name || !username || !password) {
+            NotificationSystem.toast("All fields required", "error");
+            return;
+        }
+
+        const data = StorageService.getData();
+        if (data.users.find(u => u.username === username)) {
+            NotificationSystem.toast("Username already exists", "error");
+            return;
+        }
+
+        const newUser = { id: Date.now().toString(), name, username, password, role: 'admin' };
+        data.users.push(newUser);
+        StorageService.saveData(data);
+
+        NotificationSystem.toast(`Admin "${name}" added!`, "success");
+        this.render();
+    },
+
+    deleteUser(id) {
+        if (id === 'admin') return;
+        if (confirm("Delete this admin account?")) {
+            StorageService.removeFromCollection('users', id);
+            NotificationSystem.toast("User removed", "success");
+            this.render();
+        }
     }
 };
 
@@ -781,7 +1018,7 @@ const WorksheetsView = {
                                 </button>
                                 ${isAdmin ? `
                                     <button class="icon-btn" onclick="WorksheetsView.deleteItem(${w.id})" title="Delete Worksheet"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                    <button class="btn-ghost" onclick="NotificationSystem.simulateSend('Team 3 Members', 'WhatsApp', 'New Worksheet Alert')">Announce</button>
+                                    <button class="btn-ghost" onclick="NotificationSystem.triggerUpdateBroadcast('Worksheet', '${w.title}')">Announce</button>
                                 ` : ''}
                             </div>
                         </div>
@@ -825,7 +1062,7 @@ const NewspapersView = {
                                 </button>
                                 ${isAdmin ? `
                                     <button class="icon-btn" onclick="NewspapersView.deleteItem(${n.id})" title="Delete Newspaper"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                    <button class="btn-primary" onclick="NotificationSystem.simulateSend('Members', 'WhatsApp', 'Newspaper Link')">Dispatch to Group</button>
+                                    <button class="btn-primary" onclick="NotificationSystem.triggerUpdateBroadcast('Newspaper', '${n.title}')">Dispatch to Group</button>
                                 ` : ''}
                             </div>
                         </div>
@@ -1286,6 +1523,7 @@ window.LibraryView = LibraryView;
 window.LoginView = LoginView;
 window.AdminView = AdminView;
 window.AdminStudentsView = AdminStudentsView;
+window.AdminUsersView = AdminUsersView;
 window.FeesView = FeesView;
 window.WorksheetsView = WorksheetsView;
 window.NewspapersView = NewspapersView;
@@ -1293,3 +1531,108 @@ window.StudentsView = StudentsView;
 window.ProfileView = ProfileView;
 window.BlueprintView = BlueprintView;
 window.PerformanceView = PerformanceView;
+window.EventsView = EventsView;
+
+const EventsView = {
+    render() {
+        const data = StorageService.getData();
+        const isAdmin = AuthService.isAdmin();
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+            <div class="view-header">
+                <h2>Campus Events</h2>
+                <p>Stay updated with the latest happenings at Book Buddy.</p>
+            </div>
+            
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3>Upcoming Events</h3>
+                    ${isAdmin ? `<button class="btn-primary" onclick="EventsView.showAddModal()"><i data-lucide="plus"></i> Add Event</button>` : ''}
+                </div>
+                <div class="alerts-list">
+                    ${data.events.map(e => `
+                        <div class="alert-item">
+                            <div class="alert-indicator" style="background: var(--accent-amber)"></div>
+                            <div class="alert-content">
+                                <p class="alert-msg" style="font-size: 16px;">${e.title}</p>
+                                <p class="user-role">${e.date} at ${e.time} | ${e.location}</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                ${isAdmin ? `
+                                    <button class="icon-btn" onclick="EventsView.deleteEvent(${e.id})"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                    <button class="btn-ghost" onclick="NotificationSystem.triggerUpdateBroadcast('Event', '${e.title}')">Broadcast</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div id="event-modal-overlay" class="payment-overlay" style="display: none; align-items: center; justify-content: center;">
+                <div class="stat-card" style="width: 100%; max-width: 550px; padding: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3>Schedule New Event</h3>
+                        <button class="icon-btn" onclick="document.getElementById('event-modal-overlay').style.display='none'"><i data-lucide="x"></i></button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom:4px;">Event Title</p>
+                            <input type="text" id="ev-title" class="btn-ghost" style="width:100%; padding: 12px;" placeholder="e.g. Annual Day 2026">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom:4px;">Date</p>
+                                <input type="date" id="ev-date" class="btn-ghost" style="width:100%; padding: 12px;">
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom:4px;">Time</p>
+                                <input type="time" id="ev-time" class="btn-ghost" style="width:100%; padding: 12px;">
+                            </div>
+                        </div>
+                         <div>
+                            <p class="user-role font-xs" style="margin-bottom:4px;">Location</p>
+                            <input type="text" id="ev-loc" class="btn-ghost" style="width:100%; padding: 12px;" placeholder="e.g. Main Auditorium">
+                        </div>
+                        <button class="btn-primary" style="margin-top: 12px;" onclick="EventsView.addEvent()">Create & Notify Members</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    },
+
+    showAddModal() {
+        document.getElementById('event-modal-overlay').style.display = 'flex';
+        lucide.createIcons();
+    },
+
+    addEvent() {
+        const title = document.getElementById('ev-title').value.trim();
+        const date = document.getElementById('ev-date').value;
+        const time = document.getElementById('ev-time').value;
+        const location = document.getElementById('ev-loc').value.trim();
+
+        if (!title || !date || !time) {
+            NotificationSystem.toast("Please fill title, date, and time", "error");
+            return;
+        }
+
+        const data = StorageService.getData();
+        const newId = data.events.length > 0 ? Math.max(...data.events.map(e => e.id)) + 1 : 601;
+        const newEvent = { id: newId, title, date, time, location: location || 'TBD' };
+        data.events.unshift(newEvent);
+        StorageService.saveData(data);
+
+        NotificationSystem.toast(`Event "${title}" scheduled!`, "success");
+        this.render();
+        NotificationSystem.triggerUpdateBroadcast('Event', title);
+    },
+
+    deleteEvent(id) {
+        if (confirm("Delete this event?")) {
+            StorageService.removeFromCollection('events', id);
+            NotificationSystem.toast("Event removed", "success");
+            this.render();
+        }
+    }
+};
