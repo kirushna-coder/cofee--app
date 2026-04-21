@@ -253,6 +253,13 @@ const AdminView = {
                 </div>
             </div>
 
+            <div id="absent-notifications" class="section" style="display: none;">
+                <h3>Absence Alerts Needed</h3>
+                <div class="alerts-list" id="absent-list" style="margin-top: 16px;">
+                    <!-- Populated after saving attendance -->
+                </div>
+            </div>
+
             <div class="section">
                 <h3>Manual Broadcast</h3>
                 <div class="stat-card" style="margin-top: 16px;">
@@ -266,20 +273,49 @@ const AdminView = {
 
     saveAttendance() {
         const date = document.getElementById('attendance-date').value;
+        const topics = document.getElementById('topics-covered').value;
         const data = StorageService.getData();
         const newRecords = [];
+        const absentees = [];
 
         data.students.forEach(s => {
             const status = document.querySelector(`input[name="att-${s.id}"]:checked`).value;
             newRecords.push({ date, studentId: s.id, status });
+            if (status === 'absent') {
+                absentees.push(s);
+            }
         });
 
         // Add to records
         data.attendanceRecords = [...(data.attendanceRecords || []), ...newRecords];
         StorageService.saveData(data);
 
-        NotificationSystem.toast(`Attendance for ${date} saved and parents notified!`, 'success');
-        NotificationSystem.simulateSend('Parents Group', 'WhatsApp', `Daily Update: ${document.getElementById('topics-covered').value}`);
+        NotificationSystem.toast(`Attendance for ${date} saved!`, 'success');
+        
+        // Handle Absence Alerts
+        const notifySection = document.getElementById('absent-notifications');
+        const listContainer = document.getElementById('absent-list');
+        
+        if (absentees.length > 0) {
+            notifySection.style.display = 'block';
+            listContainer.innerHTML = absentees.map(s => {
+                const msg = `Hello ${s.parentName}, this is to inform you that ${s.name} was ABSENT today (${date}). Topics covered: ${topics || 'Regular class'}. Please contact us if unplanned.`;
+                return `
+                    <div class="alert-item critical">
+                        <div class="alert-indicator"></div>
+                        <div class="alert-content">
+                            <p class="alert-msg">${s.name} - Marked Absent</p>
+                            <p class="user-role">Parent: ${s.parentName} (${s.parentPhone})</p>
+                        </div>
+                        <button class="btn-primary" onclick="NotificationSystem.sendDirectMessage('${s.parentPhone}', '${msg}')">Notify Parent</button>
+                    </div>
+                `;
+            }).join('');
+            notifySection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            notifySection.style.display = 'none';
+            NotificationSystem.simulateSend('Parents Group', 'WhatsApp', `Daily Update: All present. ${topics}`);
+        }
     },
 
     renderAccessDenied() {
@@ -430,7 +466,12 @@ const FeesView = {
         const buildStudentCard = ({ student, studentFees, totalDue, totalPaid: paid, statusColor, statusLabel }) => {
             const safeParent = student.parentName ? student.parentName.replace(/'/g, "\\'") : '';
             const reminderBtn = isAdmin && totalDue > 0
-                ? `<button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.simulateSend('${safeParent}', 'WhatsApp', 'Fee Reminder', '${student.parentPhone}')"><i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder</button>`
+                ? (() => {
+                    const studentFees = data.fees.filter(f => f.studentId === student.id && f.status !== 'paid');
+                    const feeDetails = studentFees.map(f => `${f.month} (₹${f.amount})`).join(', ');
+                    const msg = `Hello ${student.parentName}, a reminder for ${student.name}'s fee of ₹${totalDue.toLocaleString()} for ${feeDetails}. Please clear it soon.`;
+                    return `<button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')"><i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder</button>`;
+                })()
                 : '';
             const dueText  = totalDue > 0 ? `&nbsp;&middot;&nbsp;<strong style="color:var(--accent-rose);">&#8377;${totalDue.toLocaleString()} due</strong>` : '';
             const paidText = paid > 0 ? `&nbsp;&middot;&nbsp;<span style="color:var(--accent-emerald);">&#8377;${paid.toLocaleString()} paid</span>` : '';
@@ -729,10 +770,16 @@ const ProfileView = {
                         </div>
 
                         <div class="profile-actions">
-                            ${AuthService.isAdmin() ? `
-                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('${student.name}', 'WhatsApp', 'Direct Message', '${student.parentPhone}')">Message Student</button>
-                                <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Call Invitation', '${student.parentPhone}')">Call Parent</button>
-                            ` : `
+                            ${AuthService.isAdmin() ? (() => {
+                                const marksStr = grades.length > 0 
+                                    ? grades.map(g => `${g.subject}: ${g.score}/${g.max}`).join(', ')
+                                    : 'records pending';
+                                const msg = `Hello ${student.parentName}, your daughter ${student.name} scored: ${marksStr}. Overall Attendance: ${attendanceRate}%`;
+                                return `
+                                    <button class="btn-primary" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')">Message Marks</button>
+                                    <button class="btn-ghost" onclick="NotificationSystem.initiateCall('${student.parentPhone}')">Call Parent</button>
+                                `;
+                            })() : `
                                 <button class="btn-ghost" disabled>Messages Restricted to Admin</button>
                             `}
                         </div>

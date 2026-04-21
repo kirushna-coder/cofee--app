@@ -124,16 +124,36 @@ const NotificationSystem = {
         if (badge) badge.style.display = 'none';
     },
 
+    sendDirectMessage(phoneNumber, message) {
+        if (!phoneNumber) {
+            this.toast('Phone number missing', 'error');
+            return;
+        }
+        let cleanNumber = phoneNumber.replace(/\D/g, '');
+        if (cleanNumber.length === 10) cleanNumber = '91' + cleanNumber;
+        
+        const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+        this.toast(`Opening WhatsApp...`, 'info');
+    },
+
+    initiateCall(phoneNumber) {
+        if (!phoneNumber) {
+            this.toast('Phone number missing', 'error');
+            return;
+        }
+        let cleanNumber = phoneNumber.replace(/\D/g, '');
+        if (cleanNumber.length === 10) cleanNumber = '91' + cleanNumber;
+        
+        window.location.href = `tel:+${cleanNumber}`;
+        this.toast(`Initiating call...`, 'info');
+    },
+
     simulateSend(target, channel, type, phoneNumber = null) {
         const msgText = `Hello ${target}, regarding: ${type}.`;
         
         if (channel === 'WhatsApp' && phoneNumber) {
-            let cleanNumber = phoneNumber.replace(/\D/g, '');
-            if (cleanNumber.length === 10) cleanNumber = '91' + cleanNumber;
-            
-            const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(msgText)}`;
-            window.open(url, '_blank');
-            this.toast(`Opening WhatsApp chat with ${target}...`, 'info');
+            this.sendDirectMessage(phoneNumber, msgText);
             return Promise.resolve();
         }
 
