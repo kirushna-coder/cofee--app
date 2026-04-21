@@ -229,19 +229,20 @@ const AdminView = {
             <div class="section">
                 <h3>Attendance Summary (Manual Entry)</h3>
                 <div class="stat-card" style="margin-top: 16px;">
+                    <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <p class="user-role">Filter by Grade:</p>
+                        <select id="attendance-grade-filter" class="btn-ghost" style="padding: 6px 12px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
+                            <option value="all">All Grades</option>
+                            <option value="Grade 1">Grade 1</option>
+                            <option value="Grade 2">Grade 2</option>
+                            <option value="Grade 3">Grade 3</option>
+                        </select>
+                        <p class="user-role" style="margin-left: auto;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;"></p>
+                    </div>
                     <div class="attendance-setup grid-responsive" style="gap: 20px;">
                         <div class="student-select">
-                            <p class="user-role" style="margin-bottom: 10px;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;"></p>
-                            <div class="student-presence-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-                                ${data.students.map(s => `
-                                    <label style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; cursor: pointer; padding: 8px; background: var(--glass-bg); border-radius: 8px;">
-                                        <span>${s.name}</span>
-                                        <div style="display: flex; gap: 8px;">
-                                            <input type="radio" name="att-${s.id}" value="present" checked> P
-                                            <input type="radio" name="att-${s.id}" value="absent"> A
-                                        </div>
-                                    </label>
-                                `).join('')}
+                            <div class="student-presence-list" id="attendance-student-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                                <!-- Populated by renderAttendanceList -->
                             </div>
                         </div>
                         <div class="topic-setup">
@@ -269,6 +270,37 @@ const AdminView = {
             </div>
         `;
         lucide.createIcons();
+        this.renderAttendanceList();
+    },
+
+    renderAttendanceList() {
+        const filter = document.getElementById('attendance-grade-filter')?.value || 'all';
+        const data = StorageService.getData();
+        const container = document.getElementById('attendance-student-list');
+        if (!container) return;
+        
+        const filteredStudents = filter === 'all' 
+            ? data.students 
+            : data.students.filter(s => s.grade === filter);
+
+        container.innerHTML = filteredStudents.map(s => `
+            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; cursor: pointer; padding: 8px; background: var(--glass-bg); border-radius: 8px;">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-weight: 500;">${s.name}</span>
+                    <span class="user-role" style="font-size: 10px;">${s.grade}</span>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <input type="radio" name="att-${s.id}" value="present" checked style="accent-color: var(--accent-emerald);"> 
+                        <span style="color: var(--accent-emerald); font-weight: 600; font-size: 12px;">P</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <input type="radio" name="att-${s.id}" value="absent" style="accent-color: var(--accent-rose);"> 
+                        <span style="color: var(--accent-rose); font-weight: 600; font-size: 12px;">A</span>
+                    </label>
+                </div>
+            </label>
+        `).join('');
     },
 
     saveAttendance() {
@@ -371,18 +403,111 @@ const AdminStudentsView = {
                                 <div class="alert-item" style="padding: 12px; gap: 12px;">
                                     <div class="alert-content">
                                         <p class="alert-msg" style="font-size: 14px;">${s.name}</p>
+                                        <p class="user-role" style="font-size: 10px;">${s.grade || 'No Grade'} | ${s.isLibraryMember ? 'Library Member' : 'Not Member'}</p>
                                     </div>
-                                    <button class="icon-btn" onclick="AdminStudentsView.deleteStudent(${s.id})" title="Delete Student">
-                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
-                                    </button>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="icon-btn" onclick="AdminStudentsView.showEditModal(${s.id})" title="Edit Student">
+                                            <i data-lucide="edit-3" style="color: var(--accent-blue);"></i>
+                                        </button>
+                                        <button class="icon-btn" onclick="AdminStudentsView.deleteStudent(${s.id})" title="Delete Student">
+                                            <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div id="edit-student-overlay" class="payment-overlay" style="display: none; align-items: center; justify-content: center;">
+                <div class="stat-card" style="width: 100%; max-width: 500px; padding: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3>Edit Student Details</h3>
+                        <button class="icon-btn" onclick="document.getElementById('edit-student-overlay').style.display='none'"><i data-lucide="x"></i></button>
+                    </div>
+                    <input type="hidden" id="edit-id">
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 4px;">Student Name</p>
+                            <input type="text" id="edit-name" class="btn-ghost" style="width: 100%; padding: 12px;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                             <div>
+                                <p class="user-role font-xs" style="margin-bottom: 4px;">Grade</p>
+                                <select id="edit-grade" class="btn-ghost" style="width: 100%; padding: 12px;">
+                                    <option>Grade 1</option>
+                                    <option>Grade 2</option>
+                                    <option>Grade 3</option>
+                                </select>
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 4px;">Parent Phone</p>
+                                <input type="tel" id="edit-phone" class="btn-ghost" style="width: 100%; padding: 12px;">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 4px;">Library Member</p>
+                                <select id="edit-library" class="btn-ghost" style="width: 100%; padding: 12px;" onchange="document.getElementById('edit-plan-div').style.display = this.value === 'true' ? 'block' : 'none'">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div id="edit-plan-div">
+                                <p class="user-role font-xs" style="margin-bottom: 4px;">Subscription Plan</p>
+                                <select id="edit-plan" class="btn-ghost" style="width: 100%; padding: 12px;">
+                                    <option>Basic</option>
+                                    <option>Premium</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="margin-top: 12px;" onclick="AdminStudentsView.updateStudent()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
         `;
         lucide.createIcons();
+    },
+
+    showEditModal(id) {
+        const data = StorageService.getData();
+        const student = data.students.find(s => s.id === id);
+        if (!student) return;
+
+        document.getElementById('edit-id').value = student.id;
+        document.getElementById('edit-name').value = student.name;
+        document.getElementById('edit-grade').value = student.grade || 'Grade 1';
+        document.getElementById('edit-phone').value = student.parentPhone;
+        document.getElementById('edit-library').value = student.isLibraryMember ? 'true' : 'false';
+        document.getElementById('edit-plan').value = student.subscriptionPlan || 'Basic';
+        document.getElementById('edit-plan-div').style.display = student.isLibraryMember ? 'block' : 'none';
+        
+        document.getElementById('edit-student-overlay').style.display = 'flex';
+        lucide.createIcons();
+    },
+
+    updateStudent() {
+        const id = parseInt(document.getElementById('edit-id').value);
+        const name = document.getElementById('edit-name').value;
+        const grade = document.getElementById('edit-grade').value;
+        const phone = document.getElementById('edit-phone').value;
+        const isLibraryMember = document.getElementById('edit-library').value === 'true';
+        const subscriptionPlan = isLibraryMember ? document.getElementById('edit-plan').value : 'None';
+
+        if (!name) {
+            NotificationSystem.toast("Name is required", "error");
+            return;
+        }
+
+        const data = StorageService.getData();
+        const index = data.students.findIndex(s => s.id === id);
+        if (index !== -1) {
+            data.students[index] = { ...data.students[index], name, grade, parentPhone: phone, isLibraryMember, subscriptionPlan };
+            StorageService.saveData(data);
+            NotificationSystem.toast(`${name} updated successfully!`, "success");
+            this.render();
+        }
     },
 
     deleteStudent(id) {
@@ -432,6 +557,52 @@ const FeesView = {
             const statusLabel = hasUnpaid ? 'Unpaid' : hasPending ? 'Pending' : totalPaid > 0 ? 'Cleared' : 'No Records';
             return { student: s, studentFees, totalDue, totalPaid, statusColor, statusLabel };
         });
+
+        // Global function for bill generation
+        window.generateBill = (id) => {
+            const data = StorageService.getData();
+            const student = data.students.find(s => s.id === id);
+            const unpaidFees = data.fees.filter(f => f.studentId === id && f.status !== 'paid');
+            const total = unpaidFees.reduce((sum, f) => sum + f.amount, 0);
+            
+            if (unpaidFees.length === 0) {
+                NotificationSystem.toast("No outstanding fees for this student", "info");
+                return;
+            }
+
+            const billHtml = `
+                <div class="payment-overlay" id="bill-overlay" style="display: flex; align-items: center; justify-content: center;">
+                    <div class="stat-card" style="width: 100%; max-width: 400px; padding: 40px; background: white; color: #1a1a1a;">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h2 style="color: #1a1a1a; margin-bottom: 8px;">Book Buddy</h2>
+                            <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Fee Invoice / Bill</p>
+                        </div>
+                        <div style="margin-bottom: 24px; font-size: 14px;">
+                            <p><strong>Student:</strong> ${student.name}</p>
+                            <p><strong>Grade:</strong> ${student.grade}</p>
+                            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                        </div>
+                        <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 16px 0; margin-bottom: 24px;">
+                            ${unpaidFees.map(f => `
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span>${f.month} Fee</span>
+                                    <span>₹${f.amount.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 18px; margin-bottom: 32px;">
+                            <span>Total Due</span>
+                            <span>₹${total.toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn-primary" style="flex: 1; background: #1a1a1a;" onclick="window.print()">Print Bill</button>
+                            <button class="btn-ghost" style="flex: 1;" onclick="document.getElementById('bill-overlay').remove()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', billHtml);
+        };
 
         const totalOutstanding = data.fees.filter(f => f.status !== 'paid').reduce((sum, f) => sum + f.amount, 0);
         const totalCollected   = data.fees.filter(f => f.status === 'paid').reduce((sum, f) => sum + f.amount, 0);
@@ -492,6 +663,7 @@ const FeesView = {
                                 </div>
                             </div>
                             ${reminderBtn}
+                            ${isAdmin && totalDue > 0 ? `<button class="icon-btn" onclick="generateBill(${student.id})" title="Generate Bill"><i data-lucide="file-text"></i></button>` : ''}
                         </div>
                         ${feeBody}
                     </div>`;
@@ -600,10 +772,13 @@ const WorksheetsView = {
                        <div class="alert-item">
                            <div class="alert-indicator" style="background: var(--accent-blue)"></div>
                            <div class="alert-content">
-                               <p class="alert-msg">${w.title} (Launched: ${w.launched})</p>
-                               <p class="user-role">Difficulty: ${w.difficulty}</p>
-                           </div>
-                            <div style="display: flex; gap: 8px;">
+                                <p class="alert-msg">${w.title} (Launched: ${w.launched})</p>
+                                <p class="user-role">Difficulty: ${w.difficulty}</p>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <button class="btn-primary" style="padding: 10px 20px; font-size: 13px;" onclick="NotificationSystem.toast('Launching ${w.title}...', 'info')">
+                                    <i data-lucide="play" style="width: 14px; height: 14px; margin-right: 8px;"></i> Start Worksheet
+                                </button>
                                 ${isAdmin ? `
                                     <button class="icon-btn" onclick="WorksheetsView.deleteItem(${w.id})" title="Delete Worksheet"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
                                     <button class="btn-ghost" onclick="NotificationSystem.simulateSend('Team 3 Members', 'WhatsApp', 'New Worksheet Alert')">Announce</button>
@@ -641,10 +816,13 @@ const NewspapersView = {
                        <div class="alert-item">
                            <div class="alert-indicator" style="background: var(--accent-blue)"></div>
                            <div class="alert-content">
-                               <p class="alert-msg">${n.title}</p>
-                               <p class="user-role">Published: ${new Date(n.launched).toLocaleString()}</p>
-                           </div>
-                            <div style="display: flex; gap: 8px;">
+                                <p class="alert-msg">${n.title}</p>
+                                <p class="user-role">Published: ${new Date(n.launched).toLocaleString()}</p>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <button class="btn-ghost" style="padding: 10px 20px; font-size: 13px;" onclick="window.open('${n.url}', '_blank')">
+                                    <i data-lucide="external-link" style="width: 14px; height: 14px; margin-right: 8px;"></i> Read Newspaper
+                                </button>
                                 ${isAdmin ? `
                                     <button class="icon-btn" onclick="NewspapersView.deleteItem(${n.id})" title="Delete Newspaper"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
                                     <button class="btn-primary" onclick="NotificationSystem.simulateSend('Members', 'WhatsApp', 'Newspaper Link')">Dispatch to Group</button>
@@ -755,6 +933,18 @@ const ProfileView = {
                         <p class="user-role profile-id">Student ID: #TS3-${student.id.toString().padStart(3, '0')}</p>
                         
                         <div class="parent-info-card">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                                <div>
+                                    <p class="user-role font-xs">Grade</p>
+                                    <p style="font-weight: 600;">${student.grade || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="user-role font-xs">Library</p>
+                                    <p style="font-weight: 600; color: ${student.isLibraryMember ? 'var(--accent-emerald)' : 'var(--text-secondary)'}">
+                                        ${student.isLibraryMember ? student.subscriptionPlan : 'No'}
+                                    </p>
+                                </div>
+                            </div>
                             <div style="margin-bottom: 24px;">
                                 <p class="user-role font-xs">Parent / Guardian</p>
                                 <p class="parent-name">${student.parentName}</p>

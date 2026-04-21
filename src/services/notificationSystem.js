@@ -33,15 +33,18 @@ const ReminderService = {
             }
         });
 
-        // 3. Library Reminders
+        // 3. Library Reminders (7, 12, 14, 20 day schedule)
         data.library.forEach(b => {
-            const dueDate = new Date(b.dueDate);
-            const diffDays = (dueDate - now) / (1000 * 60 * 60 * 24);
+            const borrowedDate = new Date(b.borrowedDate);
+            const diffDays = Math.floor((now - borrowedDate) / (1000 * 60 * 60 * 24));
             const studentName = getStudentName(b.studentId);
-            if (diffDays < 0) {
-                alerts.push({ type: 'library', message: `Book Overdue: "${b.title}" (${studentName}) needs attention.`, priority: 'critical' });
-            } else if (diffDays < 3) {
-                alerts.push({ type: 'library', message: `Book due soon: "${b.title}" (${studentName}) due in ${Math.ceil(diffDays)} days.`, priority: 'warning' });
+            
+            if (diffDays === 7 || diffDays === 12 || diffDays === 14) {
+                alerts.push({ type: 'library', message: `Library Reminder: Day ${diffDays} for "${b.title}" (${studentName})`, priority: 'warning' });
+            } else if (diffDays === 20) {
+                alerts.push({ type: 'library', message: `ACTION REQUIRED: Day 20! Renew/Swap/Warning for "${b.title}" (${studentName})`, priority: 'critical' });
+            } else if (diffDays > 20) {
+                alerts.push({ type: 'library', message: `OVERDUE: Day ${diffDays} for "${b.title}" (${studentName}). Immediate return needed.`, priority: 'critical' });
             }
         });
 

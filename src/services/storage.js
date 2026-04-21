@@ -9,22 +9,22 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 14; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 15; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
-        { id: 1, name: "Arulmozhi Varman", parentName: "Sundara Chozhar", parentEmail: "parent1@example.com", parentPhone: "9876543210" },
-        { id: 2, name: "Kavin Selvan", parentName: "Selvaraj", parentEmail: "parent2@example.com", parentPhone: "9876543211" },
-        { id: 3, name: "Thamizhalagan", parentName: "Arivazhagan", parentEmail: "parent3@example.com", parentPhone: "9876543212" },
-        { id: 4, name: "Yazhini K.", parentName: "Kumaresan", parentEmail: "parent4@example.com", parentPhone: "9876543213" },
-        { id: 5, name: "Ilankumaran", parentName: "Ilango", parentEmail: "parent5@example.com", parentPhone: "9876543214" },
-        { id: 6, name: "Senthamizhan", parentName: "Tamizharasan", parentEmail: "parent6@example.com", parentPhone: "9876543215" },
-        { id: 7, name: "Mathivanan R.", parentName: "Rajendran", parentEmail: "parent7@example.com", parentPhone: "9876543216" },
-        { id: 8, name: "Anbarasi", parentName: "Sivakumar", parentEmail: "parent8@example.com", parentPhone: "9876543217" },
-        { id: 9, name: "Ezhilarasi", parentName: "Murugan", parentEmail: "parent9@example.com", parentPhone: "9876543218" },
-        { id: 10, name: "Pugazhendhi V.", parentName: "Velmurugan", parentEmail: "parent10@example.com", parentPhone: "9876543219" },
-        { id: 11, name: "Monisha", parentName: "Mohan", parentEmail: "parent11@example.com", parentPhone: "9677999526" },
-        { id: 12, name: "Hemanandhini", parentName: "Meganathan", parentEmail: "parent12@example.com", parentPhone: "6381366517" }
+        { id: 1, name: "Arulmozhi Varman", parentName: "Sundara Chozhar", parentEmail: "parent1@example.com", parentPhone: "9876543210", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Premium" },
+        { id: 2, name: "Kavin Selvan", parentName: "Selvaraj", parentEmail: "parent2@example.com", parentPhone: "9876543211", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Basic" },
+        { id: 3, name: "Thamizhalagan", parentName: "Arivazhagan", parentEmail: "parent3@example.com", parentPhone: "9876543212", grade: "Grade 2", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 4, name: "Yazhini K.", parentName: "Kumaresan", parentEmail: "parent4@example.com", parentPhone: "9876543213", grade: "Grade 2", isLibraryMember: true, subscriptionPlan: "Basic" },
+        { id: 5, name: "Ilankumaran", parentName: "Ilango", parentEmail: "parent5@example.com", parentPhone: "9876543214", grade: "Grade 1", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 6, name: "Senthamizhan", parentName: "Tamizharasan", parentEmail: "parent6@example.com", parentPhone: "9876543215", grade: "Grade 1", isLibraryMember: true, subscriptionPlan: "Basic" },
+        { id: 7, name: "Mathivanan R.", parentName: "Rajendran", parentEmail: "parent7@example.com", parentPhone: "9876543216", grade: "Grade 3", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 8, name: "Anbarasi", parentName: "Sivakumar", parentEmail: "parent8@example.com", parentPhone: "9876543217", grade: "Grade 2", isLibraryMember: true, subscriptionPlan: "Premium" },
+        { id: 9, name: "Ezhilarasi", parentName: "Murugan", parentEmail: "parent9@example.com", parentPhone: "9876543218", grade: "Grade 1", isLibraryMember: true, subscriptionPlan: "Basic" },
+        { id: 10, name: "Pugazhendhi V.", parentName: "Velmurugan", parentEmail: "parent10@example.com", parentPhone: "9876543219", grade: "Grade 2", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 11, name: "Monisha", parentName: "Mohan", parentEmail: "parent11@example.com", parentPhone: "9677999526", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Premium" },
+        { id: 12, name: "Hemanandhini", parentName: "Meganathan", parentEmail: "parent12@example.com", parentPhone: "6381366517", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Basic" }
     ],
     classes: [
         { id: 101, title: "Mathematics - Team 3", time: "2026-04-16T14:00:00", status: "upcoming" },
