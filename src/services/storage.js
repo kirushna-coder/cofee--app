@@ -9,91 +9,43 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 16; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 17; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
-        { id: 1, name: "Arulmozhi Varman", parentName: "Sundara Chozhar", parentEmail: "parent1@example.com", parentPhone: "9876543210", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Premium" },
-        { id: 2, name: "Kavin Selvan", parentName: "Selvaraj", parentEmail: "parent2@example.com", parentPhone: "9876543211", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Basic" },
-        { id: 3, name: "Thamizhalagan", parentName: "Arivazhagan", parentEmail: "parent3@example.com", parentPhone: "9876543212", grade: "Grade 2", isLibraryMember: false, subscriptionPlan: "None" },
-        { id: 4, name: "Yazhini K.", parentName: "Kumaresan", parentEmail: "parent4@example.com", parentPhone: "9876543213", grade: "Grade 2", isLibraryMember: true, subscriptionPlan: "Basic" },
-        { id: 5, name: "Ilankumaran", parentName: "Ilango", parentEmail: "parent5@example.com", parentPhone: "9876543214", grade: "Grade 1", isLibraryMember: false, subscriptionPlan: "None" },
-        { id: 6, name: "Senthamizhan", parentName: "Tamizharasan", parentEmail: "parent6@example.com", parentPhone: "9876543215", grade: "Grade 1", isLibraryMember: true, subscriptionPlan: "Basic" },
-        { id: 7, name: "Mathivanan R.", parentName: "Rajendran", parentEmail: "parent7@example.com", parentPhone: "9876543216", grade: "Grade 3", isLibraryMember: false, subscriptionPlan: "None" },
-        { id: 8, name: "Anbarasi", parentName: "Sivakumar", parentEmail: "parent8@example.com", parentPhone: "9876543217", grade: "Grade 2", isLibraryMember: true, subscriptionPlan: "Premium" },
-        { id: 9, name: "Ezhilarasi", parentName: "Murugan", parentEmail: "parent9@example.com", parentPhone: "9876543218", grade: "Grade 1", isLibraryMember: true, subscriptionPlan: "Basic" },
-        { id: 10, name: "Pugazhendhi V.", parentName: "Velmurugan", parentEmail: "parent10@example.com", parentPhone: "9876543219", grade: "Grade 2", isLibraryMember: false, subscriptionPlan: "None" },
-        { id: 11, name: "Monisha", parentName: "Mohan", parentEmail: "parent11@example.com", parentPhone: "9677999526", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Premium" },
-        { id: 12, name: "Hemanandhini", parentName: "Meganathan", parentEmail: "parent12@example.com", parentPhone: "6381366517", grade: "Grade 3", isLibraryMember: true, subscriptionPlan: "Basic" }
+        { id: 1, name: "Maghizini", parentName: "Meena", parentEmail: "meena@example.com", parentPhone: "8072200903", grade: "Grade 1", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 2, name: "Dheeran", parentName: "Meena", parentEmail: "meena2@example.com", parentPhone: "8072200903", grade: "Grade 4", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 3, name: "Rogit Mithran", parentName: "Sangeetha", parentEmail: "sangeetha@example.com", parentPhone: "9841840616", grade: "Grade 4", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 4, name: "Jagat Mithran", parentName: "Sangeetha", parentEmail: "sangeetha2@example.com", parentPhone: "9841840616", grade: "Grade 1", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 5, name: "Vidhaarth", parentName: "Revathi", parentEmail: "revathi@example.com", parentPhone: "9962197126", grade: "Grade 4", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 6, name: "Ria Francis", parentName: "Jennifer", parentEmail: "jennifer@example.com", parentPhone: "8124606410", grade: "Grade 2", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 7, name: "Nandeesh", parentName: "Sudha", parentEmail: "sudha@example.com", parentPhone: "9790864746", grade: "Grade 5", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 8, name: "Naresh", parentName: "Naresh", parentEmail: "naresh@example.com", parentPhone: "8825778534", grade: "Grade 12", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 9, name: "Pragadeesh", parentName: "Sudha", parentEmail: "sudha2@example.com", parentPhone: "9790864746", grade: "Grade 7", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 10, name: "Saravin", parentName: "Revathi", parentEmail: "revathi2@example.com", parentPhone: "9962197126", grade: "Grade 9", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 11, name: "Pavana", parentName: "Suveetha", parentEmail: "suveetha@example.com", parentPhone: "9500090239", grade: "Grade 7", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 12, name: "Aaric", parentName: "Jennifer", parentEmail: "jennifer2@example.com", parentPhone: "8124606410", grade: "Grade 5", isLibraryMember: false, subscriptionPlan: "None" }
     ],
     classes: [
-        { id: 101, title: "Mathematics - Team 3", time: "2026-04-16T14:00:00", status: "upcoming" },
-        { id: 102, title: "English Literature", time: "2026-04-17T11:00:00", status: "upcoming" }
+        { id: 101, title: "English - Tuesday Session", time: "2026-04-21T16:00:00", status: "upcoming" }
     ],
-    library: [
-        { id: 201, studentId: 1, title: "The Great Gatsby", borrowedDate: "2026-04-01", dueDate: "2026-04-15", status: "overdue" },
-        { id: 202, studentId: 2, title: "Clean Code", borrowedDate: "2026-04-10", dueDate: "2026-04-24", status: "borrowed" }
-    ],
-    fees: [
-        { id: 301, studentId: 1, month: "April 2026", amount: 3000, dueDate: "2026-04-10", status: "unpaid" },
-        { id: 302, studentId: 2, month: "April 2026", amount: 3000, dueDate: "2026-04-25", status: "pending" },
-        { id: 303, studentId: 3, month: "April 2026", amount: 3000, dueDate: "2026-04-15", status: "unpaid" },
-        { id: 304, studentId: 4, month: "April 2026", amount: 3000, dueDate: "2026-04-10", status: "paid" },
-        { id: 305, studentId: 5, month: "April 2026", amount: 3000, dueDate: "2026-04-20", status: "unpaid" },
-        { id: 306, studentId: 6, month: "April 2026", amount: 3000, dueDate: "2026-04-12", status: "unpaid" },
-        { id: 307, studentId: 7, month: "April 2026", amount: 3000, dueDate: "2026-04-05", status: "pending" },
-        { id: 308, studentId: 8, month: "April 2026", amount: 3000, dueDate: "2026-04-18", status: "paid" },
-        { id: 309, studentId: 9, month: "April 2026", amount: 3000, dueDate: "2026-04-22", status: "unpaid" },
-        { id: 310, studentId: 10, month: "April 2026", amount: 3000, dueDate: "2026-04-15", status: "unpaid" },
-        { id: 311, studentId: 11, month: "April 2026", amount: 3000, dueDate: "2026-04-28", status: "pending" },
-        { id: 312, studentId: 12, month: "April 2026", amount: 3000, dueDate: "2026-04-10", status: "unpaid" }
-    ],
+    library: [],
+    fees: [],
     worksheets: [
-        { id: 401, title: "Algebra Basics", launched: "2026-04-15", difficulty: "Medium" },
-        { id: 402, title: "Grammar Quiz", launched: "2026-04-14", difficulty: "Easy" }
+        { id: 401, title: "English Grammar Basics", launched: "2026-04-20", difficulty: "Easy" }
     ],
     newspapers: [
-        { id: 501, title: "Daily News - April 16", launched: "2026-04-16T08:00:00", url: "#" }
+        { id: 501, title: "Daily News - April 21", launched: "2026-04-21T08:00:00", url: "#" }
     ],
-    events: [
-        { id: 601, title: "Annual Campus Meet", date: "2026-05-10", time: "10:00 AM", location: "Main Hall" }
-    ],
-    arrivals: [
-        { id: 701, title: "Python for Kids", date: "2026-04-20", type: "Book" }
-    ],
-    attendance: [], // Populated by admin
-    attendanceRecords: [
-        { date: "2026-04-10", studentId: 1, status: "present" },
-        { date: "2026-04-10", studentId: 2, status: "absent" },
-        { date: "2026-04-10", studentId: 3, status: "present" },
-        { date: "2026-04-10", studentId: 4, status: "present" },
-        { date: "2026-04-10", studentId: 5, status: "present" },
-        { date: "2026-04-10", studentId: 6, status: "present" },
-        { date: "2026-04-10", studentId: 7, status: "present" },
-        { date: "2026-04-10", studentId: 8, status: "present" },
-        { date: "2026-04-10", studentId: 9, status: "present" },
-        { date: "2026-04-10", studentId: 10, status: "present" },
-        { date: "2026-04-10", studentId: 11, status: "present" },
-        { date: "2026-04-10", studentId: 12, status: "present" },
-        { date: "2026-04-11", studentId: 1, status: "present" },
-        { date: "2026-04-11", studentId: 2, status: "present" },
-        { date: "2026-04-11", studentId: 11, status: "present" }
-    ],
-    performanceMetrics: [
-        { studentId: 1, subject: "Mathematics", score: 88, max: 100 },
-        { studentId: 1, subject: "English", score: 92, max: 100 },
-        { studentId: 1, subject: "Science", score: 85, max: 100 },
-        { studentId: 2, subject: "Mathematics", score: 75, max: 100 },
-        { studentId: 2, subject: "English", score: 80, max: 100 },
-        { studentId: 2, subject: "Science", score: 78, max: 100 },
-        { studentId: 3, subject: "Mathematics", score: 90, max: 100 },
-        { studentId: 4, subject: "Mathematics", score: 82, max: 100 },
-        { studentId: 5, subject: "Mathematics", score: 70, max: 100 },
-        { studentId: 11, subject: "Mathematics", score: 95, max: 100 },
-        { studentId: 11, subject: "English", score: 88, max: 100 },
-        { studentId: 11, subject: "Science", score: 91, max: 100 },
-        { studentId: 12, subject: "Mathematics", score: 85, max: 100 }
-    ],
+    events: [],
+    arrivals: [],
+    attendance: [],
+    attendanceRecords: [],
+    performanceMetrics: [],
+    users: [
+        { id: 'admin', username: 'admin', password: 'p', role: 'admin', name: 'Admin User' }
+    ]
+};
     users: [
         { id: 'admin', username: 'admin', password: 'p', role: 'admin', name: 'Admin User' }
     ]
