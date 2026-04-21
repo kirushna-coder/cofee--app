@@ -364,7 +364,7 @@ const AdminView = {
                             <option value="none">-- Regular Day --</option>
                             ${data.classes.map(c => `<option value="${c.id}">${c.title} (${c.dayOfWeek})</option>`).join('')}
                         </select>
-                        <p class="user-role" style="margin-left: auto;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;"></p>
+                        <p class="user-role" style="margin-left: auto;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;" onchange="AdminView.renderAttendanceList()"></p>
                     </div>
                     <div class="attendance-setup grid-responsive" style="gap: 20px;">
                         <div class="student-select">
@@ -437,66 +437,97 @@ const AdminView = {
     },
 
     renderAttendanceList() {
+        const dateFilter = document.getElementById('attendance-date')?.value;
         const gradeFilter = document.getElementById('attendance-grade-filter')?.value || 'all';
         const classFilter = document.getElementById('attendance-class-select')?.value || 'none';
         const data = StorageService.getData();
         const container = document.getElementById('attendance-student-list');
+        const topicArea = document.getElementById('topics-covered');
+        const saveBtn = document.querySelector('button[onclick="AdminView.saveAttendance()"]');
+        
         if (!container) return;
         
-        // If a class is selected, we might want to prioritize its grade, if applicable
+        // 1. Load Session Topic
+        const existingSession = data.sessions?.find(s => s.date === dateFilter && (classFilter === 'none' ? !s.classId : s.classId == classFilter));
+        if (topicArea) topicArea.value = existingSession ? existingSession.topic : '';
+
+        // 2. Filter Students
         const selectedClass = classFilter !== 'none' ? data.classes.find(c => c.id == classFilter) : null;
         const targetGrade = selectedClass && selectedClass.grade !== 'all' ? selectedClass.grade : gradeFilter;
-
         const filteredStudents = targetGrade === 'all' 
             ? data.students 
             : data.students.filter(s => s.grade === targetGrade);
 
-        container.innerHTML = filteredStudents.map(s => `
-            <label style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; cursor: pointer; padding: 8px; background: var(--glass-bg); border-radius: 8px;">
-                <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <span style="font-weight: 500;">${s.name}</span>
-                    <span class="user-role" style="font-size: 10px;">${s.grade}</span>
-                </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                        <input type="radio" name="att-${s.id}" value="present" checked style="accent-color: var(--accent-emerald);"> 
-                        <span style="color: var(--accent-emerald); font-weight: 600; font-size: 12px;">P</span>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                        <input type="radio" name="att-${s.id}" value="absent" style="accent-color: var(--accent-rose);"> 
-                        <span style="color: var(--accent-rose); font-weight: 600; font-size: 12px;">A</span>
-                    </label>
-                </div>
-            </label>
-        `).join('');
+        // 3. Render List with Pre-filled Status
+        const relevantRecords = data.attendanceRecords?.filter(r => r.date === dateFilter && (classFilter === 'none' ? !r.classId : r.classId == classFilter)) || [];
+        
+        if (saveBtn) saveBtn.innerText = relevantRecords.length > 0 ? 'Update & Notify Parents' : 'Save & Notify Parents';
+
+        container.innerHTML = filteredStudents.map(s => {
+            const existingRecord = relevantRecords.find(r => r.studentId === s.id);
+            const isAbsent = existingRecord && existingRecord.status === 'absent';
+            const isPresent = !existingRecord || existingRecord.status === 'present';
+
+            return `
+                <label style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; cursor: pointer; padding: 8px; background: var(--glass-bg); border-radius: 8px;">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-weight: 500;">${s.name}</span>
+                        <span class="user-role" style="font-size: 10px;">${s.grade}</span>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="att-${s.id}" value="present" ${isPresent ? 'checked' : ''} style="accent-color: var(--accent-emerald);"> 
+                            <span style="color: var(--accent-emerald); font-weight: 600; font-size: 12px;">P</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="att-${s.id}" value="absent" ${isAbsent ? 'checked' : ''} style="accent-color: var(--accent-rose);"> 
+                            <span style="color: var(--accent-rose); font-weight: 600; font-size: 12px;">A</span>
+                        </label>
+                    </div>
+                </label>
+            `;
+        }).join('');
     },
 
     saveAttendance() {
         const date = document.getElementById('attendance-date').value;
         const topics = document.getElementById('topics-covered').value;
         const classId = document.getElementById('attendance-class-select').value;
+        const numericClassId = classId !== 'none' ? parseInt(classId) : null;
         const data = StorageService.getData();
-        const currentClass = classId !== 'none' ? data.classes.find(c => c.id == classId) : null;
+        const currentClass = numericClassId ? data.classes.find(c => c.id == numericClassId) : null;
         const className = currentClass ? currentClass.title : 'Regular Class';
         
         const newRecords = [];
         const absentees = [];
 
+        // 1. Gather new data
         data.students.forEach(s => {
             const rad = document.querySelector(`input[name="att-${s.id}"]:checked`);
             if (!rad) return;
             const status = rad.value;
-            newRecords.push({ date, studentId: s.id, status, classId: classId !== 'none' ? parseInt(classId) : null });
+            newRecords.push({ date, studentId: s.id, status, classId: numericClassId });
             if (status === 'absent') {
                 absentees.push(s);
             }
         });
 
-        // Add to records
-        data.attendanceRecords = [...(data.attendanceRecords || []), ...newRecords];
-        StorageService.saveData(data);
+        // 2. Upsert Logic: Remove old records for this session set
+        data.attendanceRecords = (data.attendanceRecords || []).filter(r => 
+            !(r.date === date && r.classId == numericClassId)
+        );
+        data.attendanceRecords.push(...newRecords);
 
-        NotificationSystem.toast(`Attendance for ${className} (${date}) saved!`, 'success');
+        // 3. Update Session Log (Topics)
+        data.sessions = (data.sessions || []).filter(s => 
+            !(s.date === date && s.classId == numericClassId)
+        );
+        if (topics.trim()) {
+            data.sessions.push({ date, classId: numericClassId, topic: topics.trim() });
+        }
+
+        StorageService.saveData(data);
+        NotificationSystem.toast(`Attendance for ${className} recorded!`, 'success');
         
         // Handle Absence Alerts
         const notifySection = document.getElementById('absent-notifications');

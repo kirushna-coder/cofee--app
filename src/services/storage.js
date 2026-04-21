@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 18; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 19; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
@@ -45,6 +45,7 @@ const DEFAULT_DATA = {
     attendance: [],
     attendanceRecords: [],
     performanceMetrics: [],
+    sessions: [],
     users: [
         { id: 'admin', username: 'admin', password: 'p', role: 'admin', name: 'Admin User' }
     ]
