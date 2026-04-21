@@ -463,7 +463,7 @@ const AdminView = {
             const student = data.students.find(s => s.id === item.studentId);
             const borrowedDate = new Date(item.borrowedDate);
             const diffDays = Math.floor((now - borrowedDate) / (1000 * 60 * 60 * 24));
-            const msg = `Hello ${student.parentName}, a reminder that ${student.name} has had the book "${item.title}" for ${diffDays} days. Please return or swap it at the library tomorrow.`;
+            const msg = `Greetings from Book Buddy! Hello ${student.parentName}, a reminder that ${student.name} has had the book "${item.title}" for ${diffDays} days. Please return or swap it at the library tomorrow.`;
             
             return `
                 <div class="alert-item critical">
@@ -588,7 +588,7 @@ const AdminView = {
             hasTasks = true;
             absentSection.style.display = 'block';
             absentList.innerHTML = absentees.map(s => {
-                const msg = `Hello ${s.parentName}, this is to inform you that ${s.name} was ABSENT for ${className} today (${date}). Topics covered: ${topics || 'Regular session'}. Please contact us if unplanned.`;
+                const msg = `Greetings from Book Buddy! Hello ${s.parentName}, this is to inform you that ${s.name} was ABSENT for ${className} today (${date}). Topics covered: ${topics || 'Regular session'}. Please contact us if unplanned.`;
                 return `
                     <div class="alert-item critical">
                         <div class="alert-indicator"></div>
@@ -609,7 +609,7 @@ const AdminView = {
             hasTasks = true;
             activitySection.style.display = 'block';
             activityList.innerHTML = presentStudents.map(s => {
-                const msg = `Hello ${s.parentName}, today ${s.name} attended the ${className}. We covered: ${topics}. Please encourage them to practice this at home! - Book Buddy.`;
+                const msg = `Greetings from Book Buddy! Hello ${s.parentName}, today ${s.name} attended the ${className}. We covered: ${topics}. Please encourage them to practice this at home!`;
                 return `
                     <div class="alert-item">
                         <div class="alert-indicator" style="background: var(--accent-blue)"></div>
@@ -1102,7 +1102,7 @@ const FeesView = {
                 ? (() => {
                     const studentFees = data.fees.filter(f => f.studentId === student.id && f.status !== 'paid');
                     const feeDetails = studentFees.map(f => `${f.month} (₹${f.amount})`).join(', ');
-                    const msg = `Hello ${student.parentName}, a reminder for ${student.name}'s fee of ₹${totalDue.toLocaleString()} for ${feeDetails}. Please clear it soon.`;
+                    const msg = `Greetings from Book Buddy! Hello ${student.parentName}, a reminder for ${student.name}'s fee of ₹${totalDue.toLocaleString()} for ${feeDetails}. Please clear it soon.`;
                     return `<button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')"><i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder</button>`;
                 })()
                 : '';
@@ -1426,7 +1426,7 @@ const ProfileView = {
                                 const marksStr = grades.length > 0 
                                     ? grades.map(g => `${g.subject}: ${g.score}/${g.max}`).join(', ')
                                     : 'records pending';
-                                const msg = `Hello ${student.parentName}, your daughter ${student.name} scored: ${marksStr}. Overall Attendance: ${attendanceRate}%`;
+                                const msg = `Greetings from Book Buddy! Hello ${student.parentName}, your daughter ${student.name} scored: ${marksStr}. Overall Attendance: ${attendanceRate}%`;
                                 return `
                                     <button class="btn-primary" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')">Message</button>
                                     <button class="btn-ghost" onclick="NotificationSystem.initiateCall('${student.parentPhone}')">Call Parent</button>
@@ -2057,9 +2057,14 @@ const AdminClassesView = {
                                         <p class="alert-msg">${c.title}</p>
                                         <p class="user-role">${c.dayOfWeek} at ${c.time}</p>
                                     </div>
-                                    <button class="icon-btn" onclick="AdminClassesView.deleteClass(${c.id})">
-                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
-                                    </button>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <button class="btn-ghost" style="padding: 8px 12px; font-size: 11px;" onclick="AdminClassesView.notifyParents('${c.title}')">
+                                            <i data-lucide="send" style="width: 12px; height: 12px; margin-right: 4px;"></i> Remind Parents
+                                        </button>
+                                        <button class="icon-btn" onclick="AdminClassesView.deleteClass(${c.id})">
+                                            <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -2092,6 +2097,15 @@ const AdminClassesView = {
         if (confirm("Remove this schedule slot?")) {
             StorageService.removeFromCollection('classes', id);
             this.render();
+        }
+    },
+
+    notifyParents(classTitle) {
+        const msg = `Greetings from Book Buddy! Hello Book Buddy Parents!\n\nIt's that time again!\nTurning regular reading into a lifelong habit is what we do best.\n\nOur scheduled ${classTitle} session is happening today.\n\nClass Time: 4:00 PM\n(Please arrange for pick-up promptly at 5:30 PM).\n\nLooking forward to another engaging hour of learning and fun!\nSee you soon at the library!`;
+        
+        if (confirm(`Send this session reminder to all parents? \n\nMessage: \n"${msg.substring(0, 100)}..."`)) {
+            NotificationSystem.simulateSend('All Members', 'WhatsApp', 'Session Reminder', null, msg);
+            NotificationSystem.toast(`${classTitle} reminder broadcast triggered!`, 'success');
         }
     }
 };
