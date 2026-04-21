@@ -34,7 +34,8 @@ const LibraryView = {
                                     const sName = s ? s.name : `Student ${book.studentId}`;
                                     return `
                                         <button class="btn-ghost" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
-                                        <button class="btn-ghost" onclick="NotificationSystem.toast('Extension granted (7 days)', 'success')">Extend</button>
+                                        <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Book Renewal', '${phone}', 'I would like to RENEW the book: ${book.title}')">Renew</button>
+                                        <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Book Swap', '${phone}', 'I would like to SWAP the book: ${book.title}')">Swap</button>
                                         <button class="icon-btn" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
                                         <button class="btn-primary" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Return Reminder', '${phone}')">Remind</button>
                                     `;
@@ -307,6 +308,20 @@ const AdminView = {
                         <p class="user-role">Broadcast library books</p>
                     </div>
                 </div>
+                <div class="stat-card" onclick="switchView('admin-interns')">
+                    <div class="stat-icon" style="color: var(--accent-amber)"><i data-lucide="graduation-cap"></i></div>
+                    <div class="stat-info">
+                        <h3>Intern Management</h3>
+                        <p class="user-role">View and add interns</p>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="switchView('admin-classes')">
+                    <div class="stat-icon" style="color: var(--accent-blue)"><i data-lucide="calendar-clock"></i></div>
+                    <div class="stat-info">
+                        <h3>Class Schedule</h3>
+                        <p class="user-role">Manage weekly timetable</p>
+                    </div>
+                </div>
                 <div class="stat-card" onclick="switchView('admin-users')">
                     <div class="stat-icon"><i data-lucide="users"></i></div>
                     <div class="stat-info">
@@ -541,6 +556,7 @@ const AdminStudentsView = {
                         <h3>Register New Student</h3>
                         <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
                             <input type="text" id="new-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
+                            <input type="text" id="new-school" class="btn-ghost" style="padding: 12px;" placeholder="School Name (Optional)">
                             <input type="text" id="new-parent" class="btn-ghost" style="padding: 12px;" placeholder="Parent Name">
                             <input type="email" id="new-email" class="btn-ghost" style="padding: 12px;" placeholder="Parent Email">
                             <input type="tel" id="new-phone" class="btn-ghost" style="padding: 12px;" placeholder="Parent Phone">
@@ -583,6 +599,10 @@ const AdminStudentsView = {
                         <div>
                             <p class="user-role font-xs" style="margin-bottom: 4px;">Student Name</p>
                             <input type="text" id="edit-name" class="btn-ghost" style="width: 100%; padding: 12px;">
+                        </div>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 4px;">School Name</p>
+                            <input type="text" id="edit-school" class="btn-ghost" style="width: 100%; padding: 12px;">
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                              <div>
@@ -629,6 +649,7 @@ const AdminStudentsView = {
 
         document.getElementById('edit-id').value = student.id;
         document.getElementById('edit-name').value = student.name;
+        document.getElementById('edit-school').value = student.schoolName || '';
         document.getElementById('edit-grade').value = student.grade || 'Grade 1';
         document.getElementById('edit-phone').value = student.parentPhone;
         document.getElementById('edit-library').value = student.isLibraryMember ? 'true' : 'false';
@@ -642,6 +663,7 @@ const AdminStudentsView = {
     updateStudent() {
         const id = parseInt(document.getElementById('edit-id').value);
         const name = document.getElementById('edit-name').value;
+        const school = document.getElementById('edit-school').value;
         const grade = document.getElementById('edit-grade').value;
         const phone = document.getElementById('edit-phone').value;
         const isLibraryMember = document.getElementById('edit-library').value === 'true';
@@ -655,7 +677,7 @@ const AdminStudentsView = {
         const data = StorageService.getData();
         const index = data.students.findIndex(s => s.id === id);
         if (index !== -1) {
-            data.students[index] = { ...data.students[index], name, grade, parentPhone: phone, isLibraryMember, subscriptionPlan };
+            data.students[index] = { ...data.students[index], name, schoolName: school, grade, parentPhone: phone, isLibraryMember, subscriptionPlan };
             StorageService.saveData(data);
             NotificationSystem.toast(`${name} updated successfully!`, "success");
             this.render();
@@ -671,20 +693,31 @@ const AdminStudentsView = {
     },
 
     addStudent() {
-        const name = document.getElementById('new-name').value;
-        const parentName = document.getElementById('new-parent').value;
-        const parentEmail = document.getElementById('new-email').value;
-        const parentPhone = document.getElementById('new-phone').value;
+        const name = document.getElementById('new-name').value.trim();
+        const school = document.getElementById('new-school').value.trim();
+        const parentName = document.getElementById('new-parent').value.trim();
+        const parentEmail = document.getElementById('new-email').value.trim();
+        const parentPhone = document.getElementById('new-phone').value.trim();
 
-        if (!name || !parentName) {
-            NotificationSystem.toast("Name and Parent Name are required", "error");
+        if (!name || !parentName || !parentPhone) {
+            NotificationSystem.toast("Name, Parent, and Phone are required", "error");
             return;
         }
 
         const data = StorageService.getData();
         const newId = data.students.length > 0 ? Math.max(...data.students.map(s => s.id)) + 1 : 1;
         
-        const newStudent = { id: newId, name, parentName, parentEmail, parentPhone };
+        const newStudent = {
+            id: newId,
+            name,
+            schoolName: school || 'Not Specified',
+            parentName,
+            parentEmail,
+            parentPhone,
+            grade: "Grade 1",
+            isLibraryMember: false,
+            subscriptionPlan: "None"
+        };
         data.students.push(newStudent);
         StorageService.saveData(data);
 
@@ -1637,3 +1670,172 @@ const EventsView = {
 };
 
 window.EventsView = EventsView;
+
+const AdminInternsView = {
+    render() {
+        const data = StorageService.getData() || { interns: [] };
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+                <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
+                <div>
+                    <h2>Intern Management</h2>
+                    <p>Track college interns and their parent contacts.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="grid-responsive" style="gap: 32px;">
+                    <div class="stat-card">
+                        <h3>Onboard New Intern</h3>
+                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+                            <input type="text" id="int-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
+                            <input type="text" id="int-college" class="btn-ghost" style="padding: 12px;" placeholder="College Name">
+                            <input type="email" id="int-email" class="btn-ghost" style="padding: 12px;" placeholder="Intern Email">
+                            <input type="tel" id="int-phone" class="btn-ghost" style="padding: 12px;" placeholder="Intern Phone">
+                            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 8px 0;">
+                            <p class="user-role font-xs">Emergency / Parent Contact</p>
+                            <input type="text" id="int-p-name" class="btn-ghost" style="padding: 12px;" placeholder="Parent Name">
+                            <input type="tel" id="int-p-phone" class="btn-ghost" style="padding: 12px;" placeholder="Parent Phone">
+                            <button class="btn-primary" onclick="AdminInternsView.addIntern()">Add Intern</button>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Current Interns</h3>
+                        <div class="alerts-list" style="margin-top: 24px; max-height: 500px; overflow-y: auto;">
+                            ${data.interns.map(i => `
+                                <div class="alert-item">
+                                    <div class="alert-indicator" style="background: var(--accent-emerald)"></div>
+                                    <div class="alert-content">
+                                        <p class="alert-msg">${i.name}</p>
+                                        <p class="user-role">${i.collegeName} • ${i.phone}</p>
+                                        <p class="user-role font-xs" style="margin-top: 4px;">Parent: ${i.parentName} (${i.parentPhone})</p>
+                                    </div>
+                                    <button class="icon-btn" onclick="AdminInternsView.deleteIntern(${i.id})">
+                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
+                                    </button>
+                                </div>
+                            `).join('') || '<p class="empty-msg">No interns registered.</p>'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    },
+
+    addIntern() {
+        const name = document.getElementById('int-name').value.trim();
+        const college = document.getElementById('int-college').value.trim();
+        const phone = document.getElementById('int-phone').value.trim();
+        const pName = document.getElementById('int-p-name').value.trim();
+        const pPhone = document.getElementById('int-p-phone').value.trim();
+
+        if (!name || !college || !phone) {
+            NotificationSystem.toast("Basic info required", "error");
+            return;
+        }
+
+        const data = StorageService.getData();
+        const newId = data.interns.length > 0 ? Math.max(...data.interns.map(i => i.id)) + 1 : 801;
+        const newIntern = { id: newId, name, collegeName: college, phone, parentName: pName, parentPhone: pPhone, email: document.getElementById('int-email').value };
+        
+        data.interns.unshift(newIntern);
+        StorageService.saveData(data);
+        NotificationSystem.toast("Intern registered!", "success");
+        this.render();
+    },
+
+    deleteIntern(id) {
+        if (confirm("Remove this intern?")) {
+            StorageService.removeFromCollection('interns', id);
+            this.render();
+        }
+    }
+};
+
+const AdminClassesView = {
+    render() {
+        const data = StorageService.getData();
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+                <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
+                <div>
+                    <h2>Class Schedule</h2>
+                    <p>Manage the weekly timetable for all subjects.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="grid-responsive" style="gap: 32px;">
+                    <div class="stat-card">
+                        <h3>Add Weekly Slot</h3>
+                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+                            <input type="text" id="cls-title" class="btn-ghost" style="padding: 12px;" placeholder="Subject (e.g. English)">
+                            <select id="cls-day" class="btn-ghost" style="padding: 12px;">
+                                <option>Monday</option>
+                                <option>Tuesday</option>
+                                <option>Wednesday</option>
+                                <option>Thursday</option>
+                                <option>Friday</option>
+                                <option>Saturday</option>
+                            </select>
+                            <input type="time" id="cls-time" class="btn-ghost" style="padding: 12px;">
+                            <button class="btn-primary" onclick="AdminClassesView.addClass()">Save Schedule Slot</button>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Upcoming Timetable</h3>
+                        <div class="alerts-list" style="margin-top: 24px;">
+                            ${data.classes.map(c => `
+                                <div class="alert-item">
+                                    <div class="alert-indicator" style="background: var(--accent-blue)"></div>
+                                    <div class="alert-content">
+                                        <p class="alert-msg">${c.title}</p>
+                                        <p class="user-role">${c.dayOfWeek} at ${c.time}</p>
+                                    </div>
+                                    <button class="icon-btn" onclick="AdminClassesView.deleteClass(${c.id})">
+                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    },
+
+    addClass() {
+        const title = document.getElementById('cls-title').value.trim();
+        const day = document.getElementById('cls-day').value;
+        const time = document.getElementById('cls-time').value;
+
+        if (!title || !time) return;
+
+        const data = StorageService.getData();
+        const newId = data.classes.length > 0 ? Math.max(...data.classes.map(c => c.id)) + 1 : 101;
+        const newClass = { id: newId, title, dayOfWeek: day, time, grade: "all", status: "upcoming" };
+        
+        data.classes.unshift(newClass);
+        StorageService.saveData(data);
+        NotificationSystem.toast("Schedule updated!", "success");
+        this.render();
+        NotificationSystem.triggerUpdateBroadcast('Class Schedule', `${title} on ${day}s`);
+    },
+
+    deleteClass(id) {
+        if (confirm("Remove this schedule slot?")) {
+            StorageService.removeFromCollection('classes', id);
+            this.render();
+        }
+    }
+};
+
+window.EventsView = EventsView;
+window.AdminInternsView = AdminInternsView;
+window.AdminClassesView = AdminClassesView;

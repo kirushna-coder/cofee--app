@@ -176,6 +176,12 @@ function switchView(view, params = null) {
         case 'admin-users':
             AdminUsersView.render();
             break;
+        case 'admin-interns':
+            AdminInternsView.render();
+            break;
+        case 'admin-classes':
+            AdminClassesView.render();
+            break;
         case 'events':
             EventsView.render();
             break;
