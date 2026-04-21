@@ -359,6 +359,11 @@ const AdminView = {
                             <option value="Grade 2">Grade 2</option>
                             <option value="Grade 3">Grade 3</option>
                         </select>
+                        <p class="user-role">Select Class:</p>
+                        <select id="attendance-class-select" class="btn-ghost" style="padding: 6px 12px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
+                            <option value="none">-- Regular Day --</option>
+                            ${data.classes.map(c => `<option value="${c.id}">${c.title} (${c.dayOfWeek})</option>`).join('')}
+                        </select>
                         <p class="user-role" style="margin-left: auto;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;"></p>
                     </div>
                     <div class="attendance-setup grid-responsive" style="gap: 20px;">
@@ -432,14 +437,19 @@ const AdminView = {
     },
 
     renderAttendanceList() {
-        const filter = document.getElementById('attendance-grade-filter')?.value || 'all';
+        const gradeFilter = document.getElementById('attendance-grade-filter')?.value || 'all';
+        const classFilter = document.getElementById('attendance-class-select')?.value || 'none';
         const data = StorageService.getData();
         const container = document.getElementById('attendance-student-list');
         if (!container) return;
         
-        const filteredStudents = filter === 'all' 
+        // If a class is selected, we might want to prioritize its grade, if applicable
+        const selectedClass = classFilter !== 'none' ? data.classes.find(c => c.id == classFilter) : null;
+        const targetGrade = selectedClass && selectedClass.grade !== 'all' ? selectedClass.grade : gradeFilter;
+
+        const filteredStudents = targetGrade === 'all' 
             ? data.students 
-            : data.students.filter(s => s.grade === filter);
+            : data.students.filter(s => s.grade === targetGrade);
 
         container.innerHTML = filteredStudents.map(s => `
             <label style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; cursor: pointer; padding: 8px; background: var(--glass-bg); border-radius: 8px;">
@@ -464,13 +474,19 @@ const AdminView = {
     saveAttendance() {
         const date = document.getElementById('attendance-date').value;
         const topics = document.getElementById('topics-covered').value;
+        const classId = document.getElementById('attendance-class-select').value;
         const data = StorageService.getData();
+        const currentClass = classId !== 'none' ? data.classes.find(c => c.id == classId) : null;
+        const className = currentClass ? currentClass.title : 'Regular Class';
+        
         const newRecords = [];
         const absentees = [];
 
         data.students.forEach(s => {
-            const status = document.querySelector(`input[name="att-${s.id}"]:checked`).value;
-            newRecords.push({ date, studentId: s.id, status });
+            const rad = document.querySelector(`input[name="att-${s.id}"]:checked`);
+            if (!rad) return;
+            const status = rad.value;
+            newRecords.push({ date, studentId: s.id, status, classId: classId !== 'none' ? parseInt(classId) : null });
             if (status === 'absent') {
                 absentees.push(s);
             }
@@ -480,7 +496,7 @@ const AdminView = {
         data.attendanceRecords = [...(data.attendanceRecords || []), ...newRecords];
         StorageService.saveData(data);
 
-        NotificationSystem.toast(`Attendance for ${date} saved!`, 'success');
+        NotificationSystem.toast(`Attendance for ${className} (${date}) saved!`, 'success');
         
         // Handle Absence Alerts
         const notifySection = document.getElementById('absent-notifications');
@@ -489,7 +505,7 @@ const AdminView = {
         if (absentees.length > 0) {
             notifySection.style.display = 'block';
             listContainer.innerHTML = absentees.map(s => {
-                const msg = `Hello ${s.parentName}, this is to inform you that ${s.name} was ABSENT today (${date}). Topics covered: ${topics || 'Regular class'}. Please contact us if unplanned.`;
+                const msg = `Hello ${s.parentName}, this is to inform you that ${s.name} was ABSENT for ${className} today (${date}). Topics covered: ${topics || 'Regular session'}. Please contact us if unplanned.`;
                 return `
                     <div class="alert-item critical">
                         <div class="alert-indicator"></div>
