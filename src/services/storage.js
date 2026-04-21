@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 21; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 22; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
@@ -20,7 +20,7 @@ const DEFAULT_DATA = {
         { id: 5, name: "Vidhaarth", parentName: "Revathi", parentEmail: "revathi@example.com", parentPhone: "9962197126", grade: "Grade 4", schoolName: "Central Academy", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 6, name: "Ria Francis", parentName: "Jennifer", parentEmail: "jennifer@example.com", parentPhone: "8124606410", grade: "Grade 2", schoolName: "St. Joseph's", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 7, name: "Nandeesh", parentName: "Sudha", parentEmail: "sudha@example.com", parentPhone: "9790864746", grade: "Grade 5", schoolName: "Primary School A", isLibraryMember: false, subscriptionPlan: "None" },
-        { id: 8, name: "Naresh", parentName: "Naresh", parentEmail: "naresh@example.com", parentPhone: "8825778534", grade: "Grade 12", schoolName: "Model High", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 8, name: "Naresh", parentName: "Naresh", parentEmail: "naresh@example.com", parentPhone: "6383791772", grade: "Grade 12", schoolName: "Model High", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 9, name: "Pragadeesh", parentName: "Sudha", parentEmail: "sudha2@example.com", parentPhone: "9790864746", grade: "Grade 7", schoolName: "Primary School A", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 10, name: "Saravin", parentName: "Revathi", parentEmail: "revathi2@example.com", parentPhone: "9962197126", grade: "Grade 9", schoolName: "Central Academy", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 11, name: "Pavana", parentName: "Suveetha", parentEmail: "suveetha@example.com", parentPhone: "9500090239", grade: "Grade 7", schoolName: "Global International", isLibraryMember: false, subscriptionPlan: "None" },
