@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 13; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 14; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
@@ -24,7 +24,7 @@ const DEFAULT_DATA = {
         { id: 9, name: "Ezhilarasi", parentName: "Murugan", parentEmail: "parent9@example.com", parentPhone: "9876543218" },
         { id: 10, name: "Pugazhendhi V.", parentName: "Velmurugan", parentEmail: "parent10@example.com", parentPhone: "9876543219" },
         { id: 11, name: "Monisha", parentName: "Mohan", parentEmail: "parent11@example.com", parentPhone: "9677999526" },
-        { id: 12, name: "Hemanandhini", parentName: "Meganathan", parentEmail: "parent12@example.com", parentPhone: "9876543221" }
+        { id: 12, name: "Hemanandhini", parentName: "Meganathan", parentEmail: "parent12@example.com", parentPhone: "6381366517" }
     ],
     classes: [
         { id: 101, title: "Mathematics - Team 3", time: "2026-04-16T14:00:00", status: "upcoming" },
