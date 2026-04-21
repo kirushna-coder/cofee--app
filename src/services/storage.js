@@ -9,12 +9,12 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 19; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 20; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
         { id: 1, name: "Maghizini", parentName: "Meena", parentEmail: "meena@example.com", parentPhone: "8072200903", grade: "Grade 1", schoolName: "Primary School A", isLibraryMember: false, subscriptionPlan: "None" },
-        { id: 2, name: "Dheeran", parentName: "Meena", parentEmail: "meena2@example.com", parentPhone: "8072200903", grade: "Grade 4", schoolName: "Primary School A", isLibraryMember: false, subscriptionPlan: "None" },
+        { id: 2, name: "Dheeran", parentName: "Meena", parentEmail: "meena2@example.com", parentPhone: "9080759312", grade: "Grade 4", schoolName: "Primary School A", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 3, name: "Rogit Mithran", parentName: "Sangeetha", parentEmail: "sangeetha@example.com", parentPhone: "9841840616", grade: "Grade 4", schoolName: "High School B", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 4, name: "Jagat Mithran", parentName: "Sangeetha", parentEmail: "sangeetha2@example.com", parentPhone: "9841840616", grade: "Grade 1", schoolName: "High School B", isLibraryMember: false, subscriptionPlan: "None" },
         { id: 5, name: "Vidhaarth", parentName: "Revathi", parentEmail: "revathi@example.com", parentPhone: "9962197126", grade: "Grade 4", schoolName: "Central Academy", isLibraryMember: false, subscriptionPlan: "None" },
