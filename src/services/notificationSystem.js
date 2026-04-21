@@ -124,9 +124,20 @@ const NotificationSystem = {
         if (badge) badge.style.display = 'none';
     },
 
-    simulateSend(target, channel, type) {
-        this.toast(`Simulating ${channel} to ${target}...`, 'info');
+    simulateSend(target, channel, type, phoneNumber = null) {
+        const msgText = `Hello ${target}, regarding: ${type}.`;
         
+        if (channel === 'WhatsApp' && phoneNumber) {
+            let cleanNumber = phoneNumber.replace(/\D/g, '');
+            if (cleanNumber.length === 10) cleanNumber = '91' + cleanNumber;
+            
+            const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(msgText)}`;
+            window.open(url, '_blank');
+            this.toast(`Opening WhatsApp chat with ${target}...`, 'info');
+            return Promise.resolve();
+        }
+
+        this.toast(`Simulating ${channel} to ${target}...`, 'info');
         return new Promise(resolve => {
             setTimeout(() => {
                 this.toast(`${type} sent successfully via ${channel}!`, 'success');

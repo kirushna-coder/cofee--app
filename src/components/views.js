@@ -28,12 +28,17 @@ const LibraryView = {
                                 <p class="user-role">Due: ${book.dueDate}</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                ${isAdmin ? `
-                                    <button class="btn-ghost" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
-                                    <button class="btn-ghost" onclick="NotificationSystem.toast('Extension granted (7 days)', 'success')">Extend</button>
-                                    <button class="icon-btn" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                    <button class="btn-primary" onclick="NotificationSystem.simulateSend('Student ${book.studentId}', 'WhatsApp', 'Return Reminder')">Remind</button>
-                                ` : `
+                                ${isAdmin ? (() => {
+                                    const s = data.students.find(st => st.id === book.studentId);
+                                    const phone = s ? s.parentPhone : '';
+                                    const sName = s ? s.name : `Student ${book.studentId}`;
+                                    return `
+                                        <button class="btn-ghost" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
+                                        <button class="btn-ghost" onclick="NotificationSystem.toast('Extension granted (7 days)', 'success')">Extend</button>
+                                        <button class="icon-btn" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
+                                        <button class="btn-primary" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Return Reminder', '${phone}')">Remind</button>
+                                    `;
+                                })() : `
                                     <button class="btn-ghost" disabled title="Admin Only">View Only</button>
                                 `}
                             </div>
@@ -425,7 +430,7 @@ const FeesView = {
         const buildStudentCard = ({ student, studentFees, totalDue, totalPaid: paid, statusColor, statusLabel }) => {
             const safeParent = student.parentName ? student.parentName.replace(/'/g, "\\'") : '';
             const reminderBtn = isAdmin && totalDue > 0
-                ? `<button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.simulateSend('${safeParent}', 'WhatsApp', 'Fee Reminder')"><i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder</button>`
+                ? `<button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.simulateSend('${safeParent}', 'WhatsApp', 'Fee Reminder', '${student.parentPhone}')"><i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder</button>`
                 : '';
             const dueText  = totalDue > 0 ? `&nbsp;&middot;&nbsp;<strong style="color:var(--accent-rose);">&#8377;${totalDue.toLocaleString()} due</strong>` : '';
             const paidText = paid > 0 ? `&nbsp;&middot;&nbsp;<span style="color:var(--accent-emerald);">&#8377;${paid.toLocaleString()} paid</span>` : '';
@@ -725,8 +730,8 @@ const ProfileView = {
 
                         <div class="profile-actions">
                             ${AuthService.isAdmin() ? `
-                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('${student.name}', 'WhatsApp', 'Direct Message')">Message Student</button>
-                                <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Call Invitation')">Call Parent</button>
+                                <button class="btn-primary" onclick="NotificationSystem.simulateSend('${student.name}', 'WhatsApp', 'Direct Message', '${student.parentPhone}')">Message Student</button>
+                                <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${student.parentName}', 'WhatsApp', 'Call Invitation', '${student.parentPhone}')">Call Parent</button>
                             ` : `
                                 <button class="btn-ghost" disabled>Messages Restricted to Admin</button>
                             `}
