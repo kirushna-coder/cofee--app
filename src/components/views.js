@@ -396,16 +396,50 @@ const AdminView = {
                 </div>
             </div>
 
+            <div class="grid-responsive" style="margin-top: 32px; gap: 32px; align-items: flex-start;">
+                <div class="section" style="margin: 0;">
+                    <h3>Manual Broadcast</h3>
+                    <div class="stat-card" style="margin-top: 16px;">
+                        <textarea class="btn-ghost" id="broadcast-msg" style="width: 100%; height: 100px; padding: 12px; margin-bottom: 12px; resize: none;" placeholder="Type message for worksheets/games..."></textarea>
+                        <button class="btn-primary" onclick="NotificationSystem.toast('Broadcast sent to all students!', 'success')">Broadcast to All</button>
+                    </div>
+                </div>
+
+                <div class="section" style="margin: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="margin: 0;">Message Scheduler</h3>
+                        <span class="badge badge-amber">BETA</span>
+                    </div>
+                    <div class="stat-card">
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 6px;">Schedule Time</p>
+                                <input type="datetime-local" id="sch-time" class="btn-ghost" style="width: 100%; padding: 12px;">
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 6px;">Message Content</p>
+                                <textarea id="sch-msg" class="btn-ghost" style="width: 100%; height: 80px; padding: 12px; resize: none;" placeholder="E.g. Don't forget tomorrow's annual day!"></textarea>
+                            </div>
+                            <button class="btn-primary" style="background: var(--accent-amber);" onclick="AdminView.scheduleMessage()">
+                                <i data-lucide="clock" style="width: 14px; height: 14px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Schedule Broadcast
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="section">
-                <h3>Manual Broadcast</h3>
+                <h3>Upcoming Scheduled Tasks</h3>
                 <div class="stat-card" style="margin-top: 16px;">
-                    <textarea class="btn-ghost" id="broadcast-msg" style="width: 100%; height: 100px; padding: 12px; margin-bottom: 12px; resize: none;" placeholder="Type message for worksheets/games..."></textarea>
-                    <button class="btn-primary" onclick="NotificationSystem.toast('Broadcast sent to all students!', 'success')">Broadcast to All</button>
+                    <div class="alerts-list" id="scheduled-list">
+                        <!-- Populated by renderScheduledTasks -->
+                    </div>
                 </div>
             </div>
         `;
         lucide.createIcons();
         this.renderAttendanceList();
+        this.renderScheduledTasks();
         this.renderCriticalLibrary();
     },
 
@@ -623,6 +657,72 @@ const AdminView = {
                 <button class="btn-primary" onclick="switchView('dashboard')" style="max-width: 200px; margin: 32px auto 0;">Return to Dashboard</button>
             </div>
         `;
+        lucide.createIcons();
+    },
+
+    scheduleMessage() {
+        const msg = document.getElementById('sch-msg').value.trim();
+        const timeInput = document.getElementById('sch-time').value;
+        if (!msg || !timeInput) {
+            NotificationSystem.toast("Please enter both message and time", "error");
+            return;
+        }
+
+        const data = StorageService.getData();
+        const newId = (data.scheduledMessages || []).length > 0 
+            ? Math.max(...data.scheduledMessages.map(m => m.id)) + 1 
+            : 901;
+        
+        const newSchedule = { 
+            id: newId, 
+            message: msg, 
+            time: timeInput, 
+            status: 'pending',
+            created: new Date().toISOString()
+        };
+
+        data.scheduledMessages = [...(data.scheduledMessages || []), newSchedule];
+        StorageService.saveData(data);
+        NotificationSystem.toast("Broadcast scheduled successfully!", "success");
+        this.render();
+    },
+
+    deleteScheduled(id) {
+        if (confirm("Cancel this scheduled broadcast?")) {
+            StorageService.removeFromCollection('scheduledMessages', id);
+            this.render();
+        }
+    },
+
+    renderScheduledTasks() {
+        const data = StorageService.getData();
+        const container = document.getElementById('scheduled-list');
+        if (!container) return;
+        
+        const tasks = (data.scheduledMessages || [])
+            .filter(t => t.status === 'pending')
+            .sort((a, b) => new Date(a.time) - new Date(b.time));
+
+        if (tasks.length === 0) {
+            container.innerHTML = '<p class="user-role" style="text-align: center; padding: 20px 0;">No pending broadcasts.</p>';
+            return;
+        }
+
+        container.innerHTML = tasks.map(t => {
+            const timeStr = new Date(t.time).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+            return `
+                <div class="alert-item">
+                    <div class="alert-indicator" style="background: var(--accent-amber)"></div>
+                    <div class="alert-content">
+                        <p class="alert-msg">${t.message.substring(0, 50)}${t.message.length > 50 ? '...' : ''}</p>
+                        <p class="user-role">Scheduled for: ${timeStr}</p>
+                    </div>
+                    <button class="icon-btn" onclick="AdminView.deleteScheduled(${t.id})" title="Cancel Schedule">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px; color: var(--accent-rose);"></i>
+                    </button>
+                </div>
+            `;
+        }).join('');
         lucide.createIcons();
     }
 };
@@ -1999,3 +2099,93 @@ const AdminClassesView = {
 window.EventsView = EventsView;
 window.AdminInternsView = AdminInternsView;
 window.AdminClassesView = AdminClassesView;
+
+// Global Scheduler Service
+const Scheduler = {
+    init() {
+        console.log("Scheduler Monitoring Active...");
+        setInterval(() => this.checkDueMessages(), 30000); // Check every 30 seconds
+        this.checkDueMessages(); // Initial check
+    },
+
+    checkDueMessages() {
+        const data = StorageService.getData();
+        if (!data || !data.scheduledMessages) return;
+
+        const now = new Date();
+        const due = data.scheduledMessages.find(m => m.status === 'pending' && new Date(m.time) <= now);
+
+        if (due) {
+            this.triggerAlert(due);
+        }
+    },
+
+    triggerAlert(task) {
+        if (document.getElementById('scheduler-overlay')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'scheduler-overlay';
+        overlay.className = 'payment-overlay';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '9999';
+
+        overlay.innerHTML = `
+            <div class="stat-card" style="width: 100%; max-width: 450px; padding: 40px; text-align: center; border: 2px solid var(--accent-amber); box-shadow: 0 0 50px rgba(245, 158, 11, 0.2);">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); margin: 0 auto 24px; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="clock" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h2 style="margin-bottom: 8px;">Scheduled Message Ready!</h2>
+                <p class="user-role" style="margin-bottom: 24px;">The time you set has arrived.</p>
+                
+                <div style="background: var(--bg-secondary); padding: 20px; border-radius: var(--radius-md); text-align: left; margin-bottom: 32px; border-left: 4px solid var(--accent-amber);">
+                    <p style="font-size: 14px; line-height: 1.6; color: var(--text-primary); font-weight: 500;">${task.message}</p>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn-primary" style="flex: 2; background: var(--accent-amber); height: 48px;" onclick="Scheduler.executeBroadcast(${task.id}, '${task.message.replace(/'/g, "\\'")}')">
+                        <i data-lucide="send" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Broadcast Now
+                    </button>
+                    <button class="btn-ghost" style="flex: 1; height: 48px;" onclick="Scheduler.cancelTask(${task.id})">Skip</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        lucide.createIcons();
+    },
+
+    executeBroadcast(id, msg) {
+        NotificationSystem.simulateSend('All Members', 'WhatsApp', 'Scheduled Broadcast', null, msg);
+        this.markAsSent(id);
+        this.close();
+    },
+
+    cancelTask(id) {
+        if (confirm("Mark this task as skipped? It will be removed from the schedule.")) {
+            this.markAsSent(id);
+            this.close();
+        }
+    },
+
+    markAsSent(id) {
+        const data = StorageService.getData();
+        const task = data.scheduledMessages.find(m => m.id === id);
+        if (task) {
+            task.status = 'sent';
+            StorageService.saveData(data);
+            if (document.getElementById('scheduled-list')) {
+                AdminView.renderScheduledTasks();
+            }
+        }
+    },
+
+    close() {
+        const overlay = document.getElementById('scheduler-overlay');
+        if (overlay) overlay.remove();
+    }
+};
+
+// Auto-init Scheduler
+Scheduler.init();
