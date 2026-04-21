@@ -1279,7 +1279,7 @@ const ProfileView = {
                                     : 'records pending';
                                 const msg = `Hello ${student.parentName}, your daughter ${student.name} scored: ${marksStr}. Overall Attendance: ${attendanceRate}%`;
                                 return `
-                                    <button class="btn-primary" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')">Message Marks</button>
+                                    <button class="btn-primary" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')">Message</button>
                                     <button class="btn-ghost" onclick="NotificationSystem.initiateCall('${student.parentPhone}')">Call Parent</button>
                                 `;
                             })() : `
