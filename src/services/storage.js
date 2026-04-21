@@ -9,22 +9,22 @@ const STORAGE_KEYS = {
     DATA_VERSION: 'cofee_data_version'
 };
 
-const CURRENT_VERSION = 10; // Increment this to force a re-sync for all users
+const CURRENT_VERSION = 13; // Increment this to force a re-sync for all users
 
 const DEFAULT_DATA = {
     students: [
-        { id: 1, name: "Arulmozhi Varman", parentName: "Sundara Chozhar", parentEmail: "parent1@example.com", parentPhone: "+91 98765 43210" },
-        { id: 2, name: "Kavin Selvan", parentName: "Selvaraj", parentEmail: "parent2@example.com", parentPhone: "+91 98765 43211" },
-        { id: 3, name: "Thamizhalagan", parentName: "Arivazhagan", parentEmail: "parent3@example.com", parentPhone: "+91 98765 43212" },
-        { id: 4, name: "Yazhini K.", parentName: "Kumaresan", parentEmail: "parent4@example.com", parentPhone: "+91 98765 43213" },
-        { id: 5, name: "Ilankumaran", parentName: "Ilango", parentEmail: "parent5@example.com", parentPhone: "+91 98765 43214" },
-        { id: 6, name: "Senthamizhan", parentName: "Tamizharasan", parentEmail: "parent6@example.com", parentPhone: "+91 98765 43215" },
-        { id: 7, name: "Mathivanan R.", parentName: "Rajendran", parentEmail: "parent7@example.com", parentPhone: "+91 98765 43216" },
-        { id: 8, name: "Anbarasi", parentName: "Sivakumar", parentEmail: "parent8@example.com", parentPhone: "+91 98765 43217" },
-        { id: 9, name: "Ezhilarasi", parentName: "Murugan", parentEmail: "parent9@example.com", parentPhone: "+91 98765 43218" },
-        { id: 10, name: "Pugazhendhi V.", parentName: "Velmurugan", parentEmail: "parent10@example.com", parentPhone: "+91 98765 43219" },
-        { id: 11, name: "Monisha", parentName: "Mohan", parentEmail: "parent11@example.com", parentPhone: "+91 98765 43220" },
-        { id: 12, name: "Hemanandhini", parentName: "Meganathan", parentEmail: "parent12@example.com", parentPhone: "+91 98765 43221" }
+        { id: 1, name: "Arulmozhi Varman", parentName: "Sundara Chozhar", parentEmail: "parent1@example.com", parentPhone: "9876543210" },
+        { id: 2, name: "Kavin Selvan", parentName: "Selvaraj", parentEmail: "parent2@example.com", parentPhone: "9876543211" },
+        { id: 3, name: "Thamizhalagan", parentName: "Arivazhagan", parentEmail: "parent3@example.com", parentPhone: "9876543212" },
+        { id: 4, name: "Yazhini K.", parentName: "Kumaresan", parentEmail: "parent4@example.com", parentPhone: "9876543213" },
+        { id: 5, name: "Ilankumaran", parentName: "Ilango", parentEmail: "parent5@example.com", parentPhone: "9876543214" },
+        { id: 6, name: "Senthamizhan", parentName: "Tamizharasan", parentEmail: "parent6@example.com", parentPhone: "9876543215" },
+        { id: 7, name: "Mathivanan R.", parentName: "Rajendran", parentEmail: "parent7@example.com", parentPhone: "9876543216" },
+        { id: 8, name: "Anbarasi", parentName: "Sivakumar", parentEmail: "parent8@example.com", parentPhone: "9876543217" },
+        { id: 9, name: "Ezhilarasi", parentName: "Murugan", parentEmail: "parent9@example.com", parentPhone: "9876543218" },
+        { id: 10, name: "Pugazhendhi V.", parentName: "Velmurugan", parentEmail: "parent10@example.com", parentPhone: "9876543219" },
+        { id: 11, name: "Monisha", parentName: "Mohan", parentEmail: "parent11@example.com", parentPhone: "9677999526" },
+        { id: 12, name: "Hemanandhini", parentName: "Meganathan", parentEmail: "parent12@example.com", parentPhone: "9876543221" }
     ],
     classes: [
         { id: 101, title: "Mathematics - Team 3", time: "2026-04-16T14:00:00", status: "upcoming" },
@@ -59,8 +59,19 @@ const DEFAULT_DATA = {
     attendanceRecords: [
         { date: "2026-04-10", studentId: 1, status: "present" },
         { date: "2026-04-10", studentId: 2, status: "absent" },
+        { date: "2026-04-10", studentId: 3, status: "present" },
+        { date: "2026-04-10", studentId: 4, status: "present" },
+        { date: "2026-04-10", studentId: 5, status: "present" },
+        { date: "2026-04-10", studentId: 6, status: "present" },
+        { date: "2026-04-10", studentId: 7, status: "present" },
+        { date: "2026-04-10", studentId: 8, status: "present" },
+        { date: "2026-04-10", studentId: 9, status: "present" },
+        { date: "2026-04-10", studentId: 10, status: "present" },
+        { date: "2026-04-10", studentId: 11, status: "present" },
+        { date: "2026-04-10", studentId: 12, status: "present" },
         { date: "2026-04-11", studentId: 1, status: "present" },
-        { date: "2026-04-11", studentId: 2, status: "present" }
+        { date: "2026-04-11", studentId: 2, status: "present" },
+        { date: "2026-04-11", studentId: 11, status: "present" }
     ],
     performanceMetrics: [
         { studentId: 1, subject: "Mathematics", score: 88, max: 100 },
@@ -68,7 +79,14 @@ const DEFAULT_DATA = {
         { studentId: 1, subject: "Science", score: 85, max: 100 },
         { studentId: 2, subject: "Mathematics", score: 75, max: 100 },
         { studentId: 2, subject: "English", score: 80, max: 100 },
-        { studentId: 2, subject: "Science", score: 78, max: 100 }
+        { studentId: 2, subject: "Science", score: 78, max: 100 },
+        { studentId: 3, subject: "Mathematics", score: 90, max: 100 },
+        { studentId: 4, subject: "Mathematics", score: 82, max: 100 },
+        { studentId: 5, subject: "Mathematics", score: 70, max: 100 },
+        { studentId: 11, subject: "Mathematics", score: 95, max: 100 },
+        { studentId: 11, subject: "English", score: 88, max: 100 },
+        { studentId: 11, subject: "Science", score: 91, max: 100 },
+        { studentId: 12, subject: "Mathematics", score: 85, max: 100 }
     ],
     users: [
         { id: 'admin', username: 'admin', password: 'p', role: 'admin', name: 'Admin User' }
