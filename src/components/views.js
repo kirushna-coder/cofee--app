@@ -1304,27 +1304,95 @@ const ProfileView = {
                     </div>
 
                     <div style="margin-top: 40px;">
-                        <h3 class="section-title">Subject Performance</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <h3 class="section-title" style="margin: 0;">Subject Performance</h3>
+                            <button class="btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="document.getElementById('add-mark-overlay').style.display='flex'">
+                                <i data-lucide="plus" style="width: 14px; height: 14px; margin-right: 6px; display: inline-block; vertical-align: middle;"></i> Add Mark
+                            </button>
+                        </div>
                         <div class="stat-card">
                             <div class="grades-list" style="display: flex; flex-direction: column; gap: 24px;">
                                 ${grades.map(g => `
                                     <div class="grade-item" style="padding: 0;">
-                                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
                                             <span class="subject-name">${g.subject}</span>
-                                            <span class="subject-score">${g.score}/${g.max}</span>
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <span class="subject-score">${g.score}/${g.max}</span>
+                                                <button class="icon-btn" onclick="ProfileView.deleteMark(${g.id}, ${student.id})" title="Delete Mark">
+                                                    <i data-lucide="trash-2" style="width: 14px; height: 14px; color: var(--accent-rose);"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                         <div class="progress-container" style="height: 10px;">
-                                            <div class="progress-bar" style="width: ${g.score}%; background: ${g.score > 80 ? 'var(--accent-emerald)' : 'var(--accent-blue)'}; box-shadow: 0 0 10px ${g.score > 80 ? 'rgba(16,185,129,0.3)' : 'var(--accent-blue-glow)'}"></div>
+                                            <div class="progress-bar" style="width: ${(g.score / g.max) * 100}%; background: ${g.score / g.max > 0.8 ? 'var(--accent-emerald)' : 'var(--accent-blue)'}; box-shadow: 0 0 10px ${g.score / g.max > 0.8 ? 'rgba(16,185,129,0.3)' : 'var(--accent-blue-glow)'}"></div>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `).join('') || '<p class="user-role" style="text-align: center; padding: 20px 0;">No performance records yet.</p>'}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Add Mark Modal -->
+            <div id="add-mark-overlay" class="payment-overlay" style="display: none; align-items: center; justify-content: center;">
+                <div class="stat-card" style="width: 100%; max-width: 400px; padding: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h3>Add Subject Mark</h3>
+                        <button class="icon-btn" onclick="document.getElementById('add-mark-overlay').style.display='none'"><i data-lucide="x"></i></button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 4px;">Subject</p>
+                            <input type="text" id="m-subject" class="btn-ghost" style="width: 100%; padding: 12px;" placeholder="e.g. Mathematics">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 4px;">Score</p>
+                                <input type="number" id="m-score" class="btn-ghost" style="width: 100%; padding: 12px;" placeholder="85">
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 4px;">Max Score</p>
+                                <input type="number" id="m-max" class="btn-ghost" style="width: 100%; padding: 12px;" placeholder="100">
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="margin-top: 12px;" onclick="ProfileView.addMark(${student.id})">Save Performance Record</button>
+                    </div>
+                </div>
+            </div>
         `;
         lucide.createIcons();
+    },
+
+    addMark(studentId) {
+        const subject = document.getElementById('m-subject').value.trim();
+        const score = parseInt(document.getElementById('m-score').value);
+        const max = parseInt(document.getElementById('m-max').value);
+
+        if (!subject || isNaN(score) || isNaN(max)) {
+            NotificationSystem.toast("Please fill all fields correctly", "error");
+            return;
+        }
+
+        const data = StorageService.getData();
+        const newId = (data.performanceMetrics || []).length > 0 
+            ? Math.max(...data.performanceMetrics.map(m => m.id)) + 1 
+            : 701;
+        
+        const newMark = { id: newId, studentId, subject, score, max };
+        data.performanceMetrics = [...(data.performanceMetrics || []), newMark];
+        
+        StorageService.saveData(data);
+        NotificationSystem.toast("Mark added successfully!", "success");
+        this.render(studentId);
+    },
+
+    deleteMark(id, studentId) {
+        if (confirm("Delete this performance record?")) {
+            StorageService.removeFromCollection('performanceMetrics', id);
+            NotificationSystem.toast("Record deleted", "success");
+            this.render(studentId);
+        }
     }
 };
 
