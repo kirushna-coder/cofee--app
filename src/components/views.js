@@ -379,10 +379,20 @@ const AdminView = {
                 </div>
             </div>
 
-            <div id="absent-notifications" class="section" style="display: none;">
-                <h3>Absence Alerts Needed</h3>
-                <div class="alerts-list" id="absent-list" style="margin-top: 16px;">
-                    <!-- Populated after saving attendance -->
+            <div id="attendance-post-save-actions" class="section" style="display: none; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.1); border-radius: var(--radius-lg); padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">Session Completion Tasks</h3>
+                    <button class="btn-ghost" onclick="document.getElementById('attendance-post-save-actions').style.display='none'">Done & Clear</button>
+                </div>
+
+                <div id="absent-notifications" style="display: none; margin-bottom: 32px;">
+                    <h4 class="user-role" style="color: var(--accent-rose); filter: brightness(1.2); margin-bottom: 12px; font-weight: 700;">ABSENCE ALERTS NEEDED</h4>
+                    <div class="alerts-list" id="absent-list"></div>
+                </div>
+
+                <div id="activity-notifications" style="display: none;">
+                    <h4 class="user-role" style="color: var(--accent-blue); filter: brightness(1.2); margin-bottom: 12px; font-weight: 700;">DAILY ACTIVITY UPDATES</h4>
+                    <div class="alerts-list" id="activity-list"></div>
                 </div>
             </div>
 
@@ -498,6 +508,7 @@ const AdminView = {
         
         const newRecords = [];
         const absentees = [];
+        const presentStudents = [];
 
         // 1. Gather new data
         data.students.forEach(s => {
@@ -507,6 +518,8 @@ const AdminView = {
             newRecords.push({ date, studentId: s.id, status, classId: numericClassId });
             if (status === 'absent') {
                 absentees.push(s);
+            } else if (status === 'present') {
+                presentStudents.push(s);
             }
         });
 
@@ -527,29 +540,65 @@ const AdminView = {
         StorageService.saveData(data);
         NotificationSystem.toast(`Attendance for ${className} recorded!`, 'success');
         
-        // Handle Absence Alerts
-        const notifySection = document.getElementById('absent-notifications');
-        const listContainer = document.getElementById('absent-list');
+        // Handle Post-Save Actions
+        const mainOverlay = document.getElementById('attendance-post-save-actions');
+        const absentSection = document.getElementById('absent-notifications');
+        const activitySection = document.getElementById('activity-notifications');
+        const absentList = document.getElementById('absent-list');
+        const activityList = document.getElementById('activity-list');
         
+        let hasTasks = false;
+
+        // 1. Absence Alerts
         if (absentees.length > 0) {
-            notifySection.style.display = 'block';
-            listContainer.innerHTML = absentees.map(s => {
+            hasTasks = true;
+            absentSection.style.display = 'block';
+            absentList.innerHTML = absentees.map(s => {
                 const msg = `Hello ${s.parentName}, this is to inform you that ${s.name} was ABSENT for ${className} today (${date}). Topics covered: ${topics || 'Regular session'}. Please contact us if unplanned.`;
                 return `
                     <div class="alert-item critical">
                         <div class="alert-indicator"></div>
                         <div class="alert-content">
-                            <p class="alert-msg">${s.name} - Marked Absent</p>
+                            <p class="alert-msg">${s.name} - Absence Alert</p>
                             <p class="user-role">Parent: ${s.parentName} (${s.parentPhone})</p>
                         </div>
                         <button class="btn-primary" onclick="NotificationSystem.sendDirectMessage('${s.parentPhone}', '${msg}')">Notify Parent</button>
                     </div>
                 `;
             }).join('');
-            notifySection.scrollIntoView({ behavior: 'smooth' });
         } else {
-            notifySection.style.display = 'none';
-            NotificationSystem.simulateSend('Parents Group', 'WhatsApp', `Daily Update: All present. ${topics}`);
+            absentSection.style.display = 'none';
+        }
+
+        // 2. Daily Activity Updates
+        if (presentStudents.length > 0 && topics.trim()) {
+            hasTasks = true;
+            activitySection.style.display = 'block';
+            activityList.innerHTML = presentStudents.map(s => {
+                const msg = `Hello ${s.parentName}, today ${s.name} attended the ${className}. We covered: ${topics}. Please encourage them to practice this at home! - Book Buddy.`;
+                return `
+                    <div class="alert-item">
+                        <div class="alert-indicator" style="background: var(--accent-blue)"></div>
+                        <div class="alert-content">
+                            <p class="alert-msg">${s.name} - Topic Update</p>
+                            <p class="user-role">Send: "${topics}"</p>
+                        </div>
+                        <button class="btn-primary" style="background: var(--accent-blue);" onclick="NotificationSystem.sendDirectMessage('${s.parentPhone}', '${msg}')">Send to Parent</button>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            activitySection.style.display = 'none';
+        }
+
+        if (hasTasks) {
+            mainOverlay.style.display = 'block';
+            mainOverlay.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            mainOverlay.style.display = 'none';
+            if (topics.trim()) {
+                NotificationSystem.simulateSend('Parents Group', 'WhatsApp', `Daily Update: All present. ${topics}`);
+            }
         }
 
         // Automatic Topic/Update Trigger
