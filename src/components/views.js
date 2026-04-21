@@ -355,9 +355,7 @@ const AdminView = {
                         <p class="user-role">Filter by Grade:</p>
                         <select id="attendance-grade-filter" class="btn-ghost" style="padding: 6px 12px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
                             <option value="all">All Grades</option>
-                            <option value="Grade 1">Grade 1</option>
-                            <option value="Grade 2">Grade 2</option>
-                            <option value="Grade 3">Grade 3</option>
+                            ${[...new Set(data.students.map(s => s.grade))].sort().map(g => `<option value="${g}">${g}</option>`).join('')}
                         </select>
                         <p class="user-role">Select Class:</p>
                         <select id="attendance-class-select" class="btn-ghost" style="padding: 6px 12px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
@@ -655,9 +653,7 @@ const AdminStudentsView = {
                              <div>
                                 <p class="user-role font-xs" style="margin-bottom: 4px;">Grade</p>
                                 <select id="edit-grade" class="btn-ghost" style="width: 100%; padding: 12px;">
-                                    <option>Grade 1</option>
-                                    <option>Grade 2</option>
-                                    <option>Grade 3</option>
+                                    ${Array.from({length: 12}, (_, i) => `Grade ${i+1}`).map(g => `<option>${g}</option>`).join('')}
                                 </select>
                             </div>
                             <div>
