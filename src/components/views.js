@@ -1531,7 +1531,6 @@ window.StudentsView = StudentsView;
 window.ProfileView = ProfileView;
 window.BlueprintView = BlueprintView;
 window.PerformanceView = PerformanceView;
-window.EventsView = EventsView;
 
 const EventsView = {
     render() {
@@ -1636,3 +1635,5 @@ const EventsView = {
         }
     }
 };
+
+window.EventsView = EventsView;
