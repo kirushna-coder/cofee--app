@@ -91,6 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Badge
     NotificationSystem.updateBadge();
 
+    // 6. Message Scheduler - Check every 60 seconds
+    NotificationSystem.checkScheduledMessages();
+    setInterval(() => {
+        NotificationSystem.checkScheduledMessages();
+    }, 60000);
+
     // 5. Theme Toggle Logic
     const themeBtn = document.getElementById('theme-btn');
     const body = document.body;

@@ -401,7 +401,7 @@ const AdminView = {
                     <h3>Manual Broadcast</h3>
                     <div class="stat-card" style="margin-top: 16px;">
                         <textarea class="btn-ghost" id="broadcast-msg" style="width: 100%; height: 100px; padding: 12px; margin-bottom: 12px; resize: none;" placeholder="Type message for worksheets/games..."></textarea>
-                        <button class="btn-primary" onclick="NotificationSystem.toast('Broadcast sent to all students!', 'success')">Broadcast to All</button>
+                        <button class="btn-primary" onclick="NotificationSystem.broadcastToAll(document.getElementById('broadcast-msg').value)">Broadcast to All</button>
                     </div>
                 </div>
 
@@ -638,8 +638,9 @@ const AdminView = {
         // Automatic Topic/Update Trigger
         if (topics.trim()) {
             setTimeout(() => {
+                const classMsg = numericClassId ? `Today's Learning (${className}): ${topics}` : `Today's Learning: ${topics}`;
                 if (confirm(`Attendance saved. Would you like to trigger a broadcast for the topics covered today?`)) {
-                    NotificationSystem.simulateSend('All Members', 'WhatsApp', 'Topic Update', null, `Today's Learning: ${topics}`);
+                    NotificationSystem.broadcastToAll(classMsg);
                 }
             }, 500);
         }

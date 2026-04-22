@@ -158,11 +158,13 @@ const NotificationSystem = {
         if (channel === 'WhatsApp') {
             if (phoneNumber) {
                 this.sendDirectMessage(phoneNumber, msgText);
+            } else if (target === 'All Members' || target === 'Parents Group') {
+                this.broadcastToAll(msgText);
             } else {
-                // For broadcasts (no phone number), open WhatsApp to let user pick contact/group
+                // Generic WhatsApp sharing
                 const url = `https://wa.me/?text=${encodeURIComponent(msgText)}`;
                 window.open(url, '_blank');
-                this.toast(`Opening WhatsApp for broadcast...`, 'info');
+                this.toast(`Opening WhatsApp...`, 'info');
             }
             return Promise.resolve();
         }
@@ -176,9 +178,55 @@ const NotificationSystem = {
         });
     },
 
+    broadcastToAll(message) {
+        const data = StorageService.getData();
+        const students = data.students || [];
+        const studentsWithPhones = students.filter(s => s.parentPhone);
+
+        if (studentsWithPhones.length === 0) {
+            this.toast('No student phone numbers found for broadcast', 'warning');
+            return;
+        }
+
+        if (confirm(`Send broadcast to ${studentsWithPhones.length} students/parents individually?`)) {
+            // Using a slight delay to avoid browser blocking multiple popups
+            studentsWithPhones.forEach((student, index) => {
+                setTimeout(() => {
+                    this.sendDirectMessage(student.parentPhone, message);
+                }, index * 1000); 
+            });
+            this.toast(`Initiating ${studentsWithPhones.length} messages...`, 'success');
+        }
+    },
+
     triggerUpdateBroadcast(type, itemTitle) {
-        if (confirm(`A new ${type} ("${itemTitle}") has been added. Would you like to broadcast this to all students/parents via WhatsApp Group?`)) {
-            this.simulateSend('All Members', 'WhatsApp', `New ${type} Arrival`, null, `Check out our new ${type}: ${itemTitle}!`);
+        const msg = `Greetings from Book Buddy! A new ${type} ("${itemTitle}") has been added. Check it out in the app!`;
+        this.broadcastToAll(msg);
+    },
+
+    checkScheduledMessages() {
+        const data = StorageService.getData();
+        const now = new Date();
+        let changed = false;
+
+        if (!data.scheduledMessages) return;
+
+        data.scheduledMessages.forEach(msg => {
+            if (msg.status === 'pending' && new Date(msg.time) <= now) {
+                this.toast(`Scheduled broadcast ready: ${msg.message.substring(0, 20)}...`, 'info');
+                this.broadcastToAll(msg.message);
+                msg.status = 'sent';
+                msg.sentAt = now.toISOString();
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            StorageService.saveData(data);
+            // Refresh view if admin panel is open
+            if (typeof AdminView !== 'undefined' && document.getElementById('scheduled-list')) {
+                AdminView.renderScheduledTasks();
+            }
         }
     }
 };
