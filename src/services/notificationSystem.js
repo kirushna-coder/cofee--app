@@ -127,11 +127,31 @@ const NotificationSystem = {
         if (badge) badge.style.display = 'none';
     },
 
-    sendDirectMessage(phoneNumber, message) {
+    async sendDirectMessage(phoneNumber, message) {
         if (!phoneNumber) {
             this.toast('Phone number missing', 'error');
             return;
         }
+
+        const config = WhatsappApiService.getConfig();
+        if (config.enabled && config.phoneNumberId && config.accessToken) {
+            this.toast(`Sending automatic message...`, 'info');
+            const result = await WhatsappApiService.sendMessage(phoneNumber, message);
+            if (result.success) {
+                this.toast(`Message sent successfully!`, 'success');
+            } else {
+                this.toast(`API Error: ${result.error}`, 'error');
+                // Fallback to manual if API fails
+                if (confirm(`Automatic send failed: ${result.error}. Open manual WhatsApp instead?`)) {
+                    this.openManualWhatsApp(phoneNumber, message);
+                }
+            }
+        } else {
+            this.openManualWhatsApp(phoneNumber, message);
+        }
+    },
+
+    openManualWhatsApp(phoneNumber, message) {
         let cleanNumber = phoneNumber.replace(/\D/g, '');
         if (cleanNumber.length === 10) cleanNumber = '91' + cleanNumber;
         
@@ -178,7 +198,7 @@ const NotificationSystem = {
         });
     },
 
-    broadcastToAll(message) {
+    async broadcastToAll(message) {
         const data = StorageService.getData();
         const students = data.students || [];
         const studentsWithPhones = students.filter(s => s.parentPhone);
@@ -188,14 +208,28 @@ const NotificationSystem = {
             return;
         }
 
-        if (confirm(`Send broadcast to ${studentsWithPhones.length} students/parents individually?`)) {
-            // Using a slight delay to avoid browser blocking multiple popups
-            studentsWithPhones.forEach((student, index) => {
-                setTimeout(() => {
-                    this.sendDirectMessage(student.parentPhone, message);
-                }, index * 1000); 
-            });
-            this.toast(`Initiating ${studentsWithPhones.length} messages...`, 'success');
+        const config = WhatsappApiService.getConfig();
+        if (config.enabled && config.phoneNumberId && config.accessToken) {
+            if (confirm(`Send automatic broadcast to ${studentsWithPhones.length} students via WhatsApp API?`)) {
+                this.toast(`Sending ${studentsWithPhones.length} automatic messages...`, 'info');
+                
+                let successCount = 0;
+                for (const student of studentsWithPhones) {
+                    const result = await WhatsappApiService.sendMessage(student.parentPhone, message);
+                    if (result.success) successCount++;
+                }
+                
+                this.toast(`${successCount}/${studentsWithPhones.length} messages sent!`, 'success');
+            }
+        } else {
+            if (confirm(`Send manual broadcast to ${studentsWithPhones.length} students/parents? (Will open multiple tabs)`)) {
+                studentsWithPhones.forEach((student, index) => {
+                    setTimeout(() => {
+                        this.openManualWhatsApp(student.parentPhone, message);
+                    }, index * 1000); 
+                });
+                this.toast(`Opening ${studentsWithPhones.length} WhatsApp tabs...`, 'info');
+            }
         }
     },
 

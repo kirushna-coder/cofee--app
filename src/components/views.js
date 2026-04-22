@@ -286,6 +286,7 @@ const AdminView = {
             return;
         }
         const data = StorageService.getData();
+        const config = WhatsappApiService.getConfig();
         const container = document.getElementById('view-container');
         container.innerHTML = `
             <div class="view-header">
@@ -429,10 +430,35 @@ const AdminView = {
             </div>
 
             <div class="section">
-                <h3>Upcoming Scheduled Tasks</h3>
-                <div class="stat-card" style="margin-top: 16px;">
-                    <div class="alerts-list" id="scheduled-list">
-                        <!-- Populated by renderScheduledTasks -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="margin: 0;">WhatsApp Cloud API Configuration</h3>
+                    <span class="badge badge-rose">UNSECURE FOR DEMO</span>
+                </div>
+                <div class="stat-card">
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                            <input type="checkbox" id="api-enabled" ${config.enabled ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-emerald);">
+                            <span style="font-weight: 600; color: var(--accent-emerald);">Enable Official WhatsApp API (Skips Manual Tabs)</span>
+                        </label>
+                        
+                        <div class="grid-responsive" style="gap: 16px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 6px;">Phone Number ID</p>
+                                <input type="text" id="api-phone-id" class="btn-ghost" style="width: 100%; padding: 12px;" value="${config.phoneNumberId}" placeholder="e.g. 104523315729312">
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 6px;">Graph API Version</p>
+                                <input type="text" id="api-version" class="btn-ghost" style="width: 100%; padding: 12px;" value="${config.version || 'v21.0'}" placeholder="v21.0">
+                            </div>
+                        </div>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 6px;">Permanent Access Token</p>
+                            <input type="password" id="api-token" class="btn-ghost" style="width: 100%; padding: 12px;" value="${config.accessToken}" placeholder="EAABw...">
+                            <p class="user-role" style="font-size: 11px; margin-top: 8px;">Note: This token is saved in your local browser storage. Do not use on public computers.</p>
+                        </div>
+                        <button class="btn-primary" style="background: var(--accent-emerald);" onclick="AdminView.saveApiConfig()">
+                            <i data-lucide="shield-check" style="width: 14px; height: 14px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Save API Settings
+                        </button>
                     </div>
                 </div>
             </div>
@@ -441,6 +467,22 @@ const AdminView = {
         this.renderAttendanceList();
         this.renderScheduledTasks();
         this.renderCriticalLibrary();
+    },
+
+    saveApiConfig() {
+        const enabled = document.getElementById('api-enabled').checked;
+        const phoneNumberId = document.getElementById('api-phone-id').value.trim();
+        const accessToken = document.getElementById('api-token').value.trim();
+        const version = document.getElementById('api-version').value.trim();
+
+        if (enabled && (!phoneNumberId || !accessToken)) {
+            NotificationSystem.toast("ID and Token are required to enable API", "error");
+            return;
+        }
+
+        WhatsappApiService.saveConfig({ enabled, phoneNumberId, accessToken, version });
+        NotificationSystem.toast("WhatsApp API settings saved", "success");
+        this.render();
     },
 
     renderCriticalLibrary() {
