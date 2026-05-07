@@ -780,6 +780,7 @@ const AdminView = {
                     </div>
                     <button class="icon-btn" onclick="AdminView.deleteScheduled(${t.id})" title="Cancel Schedule">
                         <i data-lucide="trash-2" style="width: 16px; height: 16px; color: var(--accent-rose);"></i>
+                    </button>
                 </div>
             `;
         }).join('');
@@ -911,9 +912,6 @@ const AdminStudentsView = {
                 </div>
             </div>
         `;
-        lucide.createIcons();
-    },
-
         lucide.createIcons();
     },
 
@@ -1429,144 +1427,6 @@ const NewspapersView = {
             NotificationSystem.toast("Newspaper entry deleted", "success");
             this.render();
         }
-    }
-};
-
-const BlueprintView = {
-    render() {
-        const container = document.getElementById('view-container');
-        container.innerHTML = `
-            <div class="view-header slide-up">
-                <h2 style="font-size: 32px; font-weight: 700;">Campus Blueprint</h2>
-                <p>Interactive facility layout and resource map for Book Buddy Academy.</p>
-            </div>
-            
-            <div class="section slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
-                <div class="grid-responsive" style="gap: 32px;">
-                    <div class="stat-card premium-border" style="grid-column: span 2; padding: 48px; background: var(--bg-secondary); min-height: 500px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-                        <div class="blueprint-grid" style="width: 100%; height: 100%; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(6, 1fr); gap: 12px; z-index: 2;">
-                            <div class="blueprint-zone" style="grid-area: 1 / 1 / 3 / 4; background: rgba(59, 130, 246, 0.1); border: 2px dashed var(--accent-blue); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;">
-                                <i data-lucide="book-open" style="color: var(--accent-blue);"></i>
-                                <span style="font-size: 12px; font-weight: 700; color: var(--accent-blue);">Main Library</span>
-                            </div>
-                            <div class="blueprint-zone" style="grid-area: 1 / 5 / 3 / 8; background: rgba(16, 185, 129, 0.1); border: 2px dashed var(--accent-emerald); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;">
-                                <i data-lucide="graduation-cap" style="color: var(--accent-emerald);"></i>
-                                <span style="font-size: 12px; font-weight: 700; color: var(--accent-emerald);">Primary Wing</span>
-                            </div>
-                            <div class="blueprint-zone" style="grid-area: 4 / 1 / 6 / 3; background: rgba(245, 158, 11, 0.1); border: 2px dashed var(--accent-amber); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;">
-                                <i data-lucide="coffee" style="color: var(--accent-amber);"></i>
-                                <span style="font-size: 12px; font-weight: 700; color: var(--accent-amber);">Staff Lounge</span>
-                            </div>
-                            <div class="blueprint-zone" style="grid-area: 4 / 4 / 7 / 8; background: rgba(244, 63, 94, 0.1); border: 2px dashed var(--accent-rose); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;">
-                                <i data-lucide="settings" style="color: var(--accent-rose);"></i>
-                                <span style="font-size: 12px; font-weight: 700; color: var(--accent-rose);">Admin Block</span>
-                            </div>
-                        </div>
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.03; background-image: radial-gradient(var(--text-primary) 1px, transparent 1px); background-size: 30px 30px;"></div>
-                    </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 24px;">
-                        <div class="stat-card" style="padding: 24px;">
-                            <h4 style="font-weight: 700; margin-bottom: 16px;">Facility Status</h4>
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span class="user-role">Library Occupancy</span>
-                                    <span class="badge badge-emerald">65%</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span class="user-role">Classrooms Active</span>
-                                    <span class="badge badge-blue">12 / 14</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span class="user-role">Power Usage</span>
-                                    <span class="badge badge-amber">Stable</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="btn-primary" style="width: 100%; padding: 16px;" onclick="NotificationSystem.toast('Updating map resources...', 'info')">
-                            <i data-lucide="refresh-cw" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Sync Blueprint
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        lucide.createIcons();
-    }
-};
-
-const PerformanceView = {
-    render() {
-        const data = StorageService.getData();
-        const container = document.getElementById('view-container');
-        container.innerHTML = `
-            <div class="view-header slide-up">
-                <h2 style="font-size: 32px; font-weight: 700;">Performance Analytics</h2>
-                <p>Data-driven insights into student progress and institutional growth.</p>
-            </div>
-            
-            <div class="dashboard-grid slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
-                <div class="stat-card">
-                    <div class="stat-icon-wrapper emerald"><i data-lucide="trending-up"></i></div>
-                    <div class="stat-info">
-                        <h3>Avg. Attendance</h3>
-                        <p class="value">94.2%</p>
-                        <p class="trend up">+2.1% from last month</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon-wrapper blue"><i data-lucide="award"></i></div>
-                    <div class="stat-info">
-                        <h3>Top Performers</h3>
-                        <p class="value">18 Students</p>
-                        <p class="trend up">Rising trend</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon-wrapper amber"><i data-lucide="book-open"></i></div>
-                    <div class="stat-info">
-                        <h3>Reading Velocity</h3>
-                        <p class="value">4.5 Books/wk</p>
-                        <p class="trend down">-0.2 from last wk</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section slide-up" style="margin-top: 48px; animation-delay: 0.2s;">
-                <div class="stat-card premium-border" style="padding: 32px;">
-                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Subject Proficiency</h3>
-                    <div style="display: flex; flex-direction: column; gap: 24px;">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                <span style="font-weight: 600;">English Literature</span>
-                                <span style="color: var(--accent-blue); font-weight: 700;">88%</span>
-                            </div>
-                            <div style="width: 100%; height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden;">
-                                <div style="width: 88%; height: 100%; background: var(--accent-blue); border-radius: 4px;"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                <span style="font-weight: 600;">Mathematical Logic</span>
-                                <span style="color: var(--accent-emerald); font-weight: 700;">92%</span>
-                            </div>
-                            <div style="width: 100%; height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden;">
-                                <div style="width: 92%; height: 100%; background: var(--accent-emerald); border-radius: 4px;"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                <span style="font-weight: 600;">Creative Arts</span>
-                                <span style="color: var(--accent-rose); font-weight: 700;">76%</span>
-                            </div>
-                            <div style="width: 100%; height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden;">
-                                <div style="width: 76%; height: 100%; background: var(--accent-rose); border-radius: 4px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        lucide.createIcons();
     }
 };
 
@@ -2088,17 +1948,6 @@ const PaymentModal = {
     }
 };
 
-window.PaymentModal = PaymentModal;
-window.LibraryView = LibraryView;
-window.LoginView = LoginView;
-window.AdminView = AdminView;
-window.AdminStudentsView = AdminStudentsView;
-window.AdminUsersView = AdminUsersView;
-window.FeesView = FeesView;
-window.WorksheetsView = WorksheetsView;
-window.NewspapersView = NewspapersView;
-window.StudentsView = StudentsView;
-window.ProfileView = ProfileView;
 const EventsView = {
     render() {
         const data = StorageService.getData();
@@ -2206,9 +2055,6 @@ const EventsView = {
     }
 };
 
-window.EventsView = EventsView;
-window.BlueprintView = BlueprintView;
-window.PerformanceView = PerformanceView;
 
 const AdminInternsView = {
     render() {
@@ -2431,9 +2277,6 @@ const AdminClassesView = {
     }
 };
 
-window.EventsView = EventsView;
-window.AdminInternsView = AdminInternsView;
-window.AdminClassesView = AdminClassesView;
 
 // Global Scheduler Service
 const Scheduler = {
@@ -2529,3 +2372,21 @@ const Scheduler = {
 // Auto-init Scheduler
 Scheduler.init();
 window.Scheduler = Scheduler;
+
+// Global Window Assignments
+window.LibraryView = LibraryView;
+window.LoginView = LoginView;
+window.AdminView = AdminView;
+window.AdminStudentsView = AdminStudentsView;
+window.AdminUsersView = AdminUsersView;
+window.FeesView = FeesView;
+window.WorksheetsView = WorksheetsView;
+window.NewspapersView = NewspapersView;
+window.StudentsView = StudentsView;
+window.ProfileView = ProfileView;
+window.EventsView = EventsView;
+window.BlueprintView = BlueprintView;
+window.PerformanceView = PerformanceView;
+window.AdminInternsView = AdminInternsView;
+window.AdminClassesView = AdminClassesView;
+window.PaymentModal = PaymentModal;
