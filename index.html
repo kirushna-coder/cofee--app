@@ -72,6 +72,10 @@
             </nav>
 
             <div class="nav-actions">
+                <div class="system-status desktop-only">
+                    <span class="status-dot"></span>
+                    <span class="status-text">System Live</span>
+                </div>
                 <div class="header-search desktop-only">
                     <i data-lucide="search"></i>
                     <input type="text" placeholder="Search...">
@@ -116,6 +120,19 @@
 
     <!-- Notification Overlay -->
     <div id="toast-container"></div>
+
+    <!-- Real-Time Process Hub -->
+    <div id="process-hub" class="process-hub">
+        <div class="process-hub-header">
+            <h3>Active Processes</h3>
+            <button class="icon-btn btn-sm" onclick="document.getElementById('process-hub').classList.toggle('minimized')">
+                <i data-lucide="chevron-down"></i>
+            </button>
+        </div>
+        <div id="process-list" class="process-list">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
 
     <!-- Services -->
     <script src="src/services/storage.js"></script>

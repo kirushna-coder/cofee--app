@@ -14,18 +14,19 @@ const LibraryView = {
         const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header">
+            <div class="view-header slide-up">
                 <h2>Library Management</h2>
-                <p>Manage book returns, extensions, and swaps.</p>
+                <p>Manage book returns, extensions, and swaps with real-time tracking.</p>
             </div>
-            <div class="section">
+            <div class="section slide-up" style="animation-delay: 0.1s;">
                 <div class="alerts-list">
                     ${data.library.map(book => `
-                        <div class="alert-item">
+                        <div class="alert-item premium">
                             <div class="alert-indicator" style="background: ${new Date(book.dueDate) < new Date() ? 'var(--accent-rose)' : 'var(--accent-emerald)'}"></div>
+                            <div class="alert-icon-circle"><i data-lucide="book-open"></i></div>
                             <div class="alert-content">
-                                <p class="alert-msg">"${book.title}" - ${this.getStudentName(book.studentId)}</p>
-                                <p class="user-role">Due: ${book.dueDate}</p>
+                                <p class="alert-msg">"${book.title}"</p>
+                                <p class="user-role">Student: ${this.getStudentName(book.studentId)} | Due: ${book.dueDate}</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 ${isAdmin ? (() => {
@@ -33,11 +34,10 @@ const LibraryView = {
                                     const phone = s ? s.parentPhone : '';
                                     const sName = s ? s.name : `Student ${book.studentId}`;
                                     return `
-                                        <button class="btn-ghost" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
-                                        <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Book Renewal', '${phone}', 'I would like to RENEW the book: ${book.title}')">Renew</button>
-                                        <button class="btn-ghost" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Book Swap', '${phone}', 'I would like to SWAP the book: ${book.title}')">Swap</button>
-                                        <button class="icon-btn" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                        <button class="btn-primary" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Return Reminder', '${phone}')">Remind</button>
+                                        <button class="btn-ghost btn-sm" onclick="NotificationSystem.toast('Return recorded', 'success')">Return</button>
+                                        <button class="btn-ghost btn-sm" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Book Renewal', '${phone}', 'I would like to RENEW the book: ${book.title}')">Renew</button>
+                                        <button class="btn-primary btn-sm" onclick="NotificationSystem.simulateSend('${sName}', 'WhatsApp', 'Return Reminder', '${phone}')">Remind</button>
+                                        <button class="icon-btn btn-sm" onclick="LibraryView.deleteItem(${book.id})" title="Delete Book"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
                                     `;
                                 })() : `
                                     <button class="btn-ghost" disabled title="Admin Only">View Only</button>
@@ -66,9 +66,9 @@ const LibraryView = {
         const container = document.getElementById('view-container');
         
         container.insertAdjacentHTML('beforeend', `
-            <div class="section" style="margin-top: 40px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>New Arrivals (Library)</h3>
+            <div class="section slide-up" style="margin-top: 48px; animation-delay: 0.2s;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h3 style="font-size: 20px; font-weight: 700;">New Arrivals Hub</h3>
                     ${isAdmin ? `
                         <button class="btn-primary" onclick="LibraryView.showAddArrivalModal()">
                             <i data-lucide="plus-circle" style="width: 14px; height: 14px; margin-right: 8px;"></i> Log New Arrival
@@ -77,16 +77,17 @@ const LibraryView = {
                 </div>
                 <div class="alerts-list">
                     ${data.arrivals.map(a => `
-                        <div class="alert-item">
+                        <div class="alert-item premium">
                             <div class="alert-indicator" style="background: var(--accent-blue)"></div>
+                            <div class="alert-icon-circle"><i data-lucide="package"></i></div>
                             <div class="alert-content">
                                 <p class="alert-msg">${a.title}</p>
                                 <p class="user-role">${a.type} | Added: ${a.date}</p>
                             </div>
                             ${isAdmin ? `
                                 <div style="display: flex; gap: 8px;">
-                                    <button class="icon-btn" onclick="LibraryView.deleteArrival(${a.id})"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                    <button class="btn-ghost" onclick="NotificationSystem.triggerUpdateBroadcast('New arrival', '${a.title}')">Announce</button>
+                                    <button class="btn-ghost btn-sm" onclick="NotificationSystem.triggerUpdateBroadcast('New arrival', '${a.title}')">Announce</button>
+                                    <button class="icon-btn btn-sm" onclick="LibraryView.deleteArrival(${a.id})"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
                                 </div>
                             ` : ''}
                         </div>
@@ -97,17 +98,23 @@ const LibraryView = {
             <div id="arrival-modal-overlay" class="payment-overlay" style="display: none; align-items: center; justify-content: center;">
                 <div class="stat-card" style="width: 100%; max-width: 400px; padding: 32px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                        <h3>Log New Arrival</h3>
+                        <h3 style="font-weight: 700;">Log New Arrival</h3>
                         <button class="icon-btn" onclick="document.getElementById('arrival-modal-overlay').style.display='none'"><i data-lucide="x"></i></button>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
-                        <input type="text" id="arrival-title" class="btn-ghost" style="padding: 12px;" placeholder="Title / Name">
-                        <select id="arrival-type" class="btn-ghost" style="padding: 12px;">
-                            <option>Book</option>
-                            <option>Game</option>
-                            <option>Kit</option>
-                        </select>
-                        <button class="btn-primary" onclick="LibraryView.addArrival()">Add to Collection</button>
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px;">Title / Item Name</p>
+                            <input type="text" id="arrival-title" class="btn-ghost" style="width: 100%; padding: 12px;" placeholder="e.g. Encyclopedia of Science">
+                        </div>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px;">Category</p>
+                            <select id="arrival-type" class="btn-ghost" style="width: 100%; padding: 12px; cursor: pointer;">
+                                <option>Book</option>
+                                <option>Game</option>
+                                <option>Kit</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" style="padding: 14px;" onclick="LibraryView.addArrival()">Add to Collection</button>
                     </div>
                 </div>
             </div>
@@ -157,27 +164,27 @@ const LoginView = {
         const container = document.getElementById('view-container');
         container.innerHTML = `
             <div class="login-wrapper">
-                <div class="login-card stat-card">
-                    <div class="logo-section" style="margin-bottom: 24px; justify-content: center;">
-                        <div class="logo-icon">☕</div>
-                        <h1>CoFee<span>App</span></h1>
+                <div class="login-card stat-card fade-in">
+                    <div class="logo-section" style="margin-bottom: 32px; justify-content: center;">
+                        <div class="logo-icon">📚</div>
+                        <h1 style="font-size: 28px;">Book<span>Buddy</span></h1>
                     </div>
-                    <h2>Welcome Back</h2>
-                    <p class="user-role" style="margin-bottom: 24px;">Please sign in to continue.</p>
+                    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Welcome Back</h2>
+                    <p class="user-role" style="margin-bottom: 32px; font-size: 15px;">Please sign in to access the management portal.</p>
                     
-                    <div id="login-error" class="badge badge-rose" style="display: none; width: 100%; margin-bottom: 20px; text-transform: none;"></div>
+                    <div id="login-error" class="badge badge-rose" style="display: none; width: 100%; margin-bottom: 24px; text-transform: none; padding: 10px;"></div>
                     
-                    <div style="display: flex; flex-direction: column; gap: 16px; text-align: left;">
+                    <div style="display: flex; flex-direction: column; gap: 20px; text-align: left;">
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Username</p>
-                            <input type="text" id="username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="admin" onkeydown="if(event.key === 'Enter') LoginView.handleLogin()">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Username</p>
+                            <input type="text" id="username" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 16px; background: var(--bg-primary);" placeholder="admin" onkeydown="if(event.key === 'Enter') LoginView.handleLogin()">
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Password</p>
-                            <input type="password" id="password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••" onkeydown="if(event.key === 'Enter') LoginView.handleLogin()">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Password</p>
+                            <input type="password" id="password" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 16px; background: var(--bg-primary);" placeholder="••••••••" onkeydown="if(event.key === 'Enter') LoginView.handleLogin()">
                         </div>
-                        <button class="btn-primary" style="margin-top: 8px; padding: 14px;" onclick="LoginView.handleLogin()">Sign In</button>
-                        <p style="text-align: center; font-size: 14px; margin-top: 8px;">Don't have an account? <a href="#" onclick="LoginView.showRegisterForm()" style="color: var(--accent-blue); font-weight: 600;">Sign Up</a></p>
+                        <button class="btn-primary" style="margin-top: 12px; padding: 16px; font-size: 16px; font-weight: 700;" onclick="LoginView.handleLogin()">Sign In to Dashboard</button>
+                        <p style="text-align: center; font-size: 14px; margin-top: 16px; color: var(--text-secondary);">Don't have an account? <a href="#" onclick="LoginView.showRegisterForm()" style="color: var(--accent-blue); font-weight: 700;">Create one</a></p>
 
                     </div>
                 </div>
@@ -189,31 +196,31 @@ const LoginView = {
         const container = document.getElementById('view-container');
         container.innerHTML = `
             <div class="login-wrapper">
-                <div class="login-card stat-card">
-                    <div class="logo-section" style="margin-bottom: 24px; justify-content: center;">
-                        <div class="logo-icon">☕</div>
-                        <h1>CoFee<span>App</span></h1>
+                <div class="login-card stat-card fade-in">
+                    <div class="logo-section" style="margin-bottom: 32px; justify-content: center;">
+                        <div class="logo-icon">📚</div>
+                        <h1 style="font-size: 28px;">Book<span>Buddy</span></h1>
                     </div>
-                    <h2>Create Account</h2>
-                    <p class="user-role" style="margin-bottom: 24px;">Sign up for Team 3 Management.</p>
+                    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Create Account</h2>
+                    <p class="user-role" style="margin-bottom: 32px; font-size: 15px;">Sign up for school management access.</p>
                     
-                    <div id="register-error" class="badge badge-rose" style="display: none; width: 100%; margin-bottom: 20px; text-transform: none;"></div>
+                    <div id="register-error" class="badge badge-rose" style="display: none; width: 100%; margin-bottom: 24px; text-transform: none; padding: 10px;"></div>
                     
-                    <div style="display: flex; flex-direction: column; gap: 16px; text-align: left;">
+                    <div style="display: flex; flex-direction: column; gap: 20px; text-align: left;">
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Full Name</p>
-                            <input type="text" id="reg-name" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="John Doe" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Full Name</p>
+                            <input type="text" id="reg-name" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 16px; background: var(--bg-primary);" placeholder="John Doe" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Username</p>
-                            <input type="text" id="reg-username" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="johndoe" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Username</p>
+                            <input type="text" id="reg-username" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 16px; background: var(--bg-primary);" placeholder="johndoe" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom: 8px;">Password</p>
-                            <input type="password" id="reg-password" class="btn-ghost" style="width: 100%; padding: 12px; font-size: 16px;" placeholder="••••••••" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Password</p>
+                            <input type="password" id="reg-password" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 16px; background: var(--bg-primary);" placeholder="••••••••" onkeydown="if(event.key === 'Enter') LoginView.handleRegister()">
                         </div>
-                        <button class="btn-primary" style="margin-top: 8px; padding: 14px;" onclick="LoginView.handleRegister()">Register</button>
-                        <p style="text-align: center; font-size: 14px; margin-top: 8px;">Already have an account? <a href="#" onclick="LoginView.showLoginForm()" style="color: var(--accent-blue); font-weight: 600;">Login</a></p>
+                        <button class="btn-primary" style="margin-top: 12px; padding: 16px; font-size: 16px; font-weight: 700;" onclick="LoginView.handleRegister()">Create Account</button>
+                        <p style="text-align: center; font-size: 14px; margin-top: 16px; color: var(--text-secondary);">Already have an account? <a href="#" onclick="LoginView.showLoginForm()" style="color: var(--accent-blue); font-weight: 700;">Sign in here</a></p>
                     </div>
                 </div>
             </div>
@@ -289,92 +296,103 @@ const AdminView = {
         const config = WhatsappApiService.getConfig();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header">
-                <h2>Admin Master Panel</h2>
-                <p>Manage students, attendance, and broadcasting.</p>
+            <div class="view-header slide-up">
+                <h2>Admin Master Hub</h2>
+                <p>Advanced controls for student management, broadcasting, and system configuration.</p>
             </div>
             
-            <div class="dashboard-grid" style="margin-top: 24px;">
-                <div class="stat-card" onclick="switchView('admin-students')">
-                    <div class="stat-icon"><i data-lucide="user-plus"></i></div>
+            <div class="dashboard-grid slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
+                <div class="stat-card premium-hover" onclick="switchView('admin-students')">
+                    <div class="stat-icon-wrapper blue"><i data-lucide="user-plus"></i></div>
                     <div class="stat-info">
-                        <h3>Student Management</h3>
-                        <p class="user-role">Add or edit students</p>
+                        <h3 style="font-weight: 700;">Student Management</h3>
+                        <p class="user-role">Add, edit, or remove students</p>
                     </div>
                 </div>
-                <div class="stat-card" onclick="NotificationSystem.simulateSend('All Members', 'WhatsApp/Mail', 'New Arrivals')">
-                    <div class="stat-icon"><i data-lucide="package"></i></div>
+                <div class="stat-card premium-hover" onclick="NotificationSystem.simulateSend('All Members', 'WhatsApp/Mail', 'New Arrivals')">
+                    <div class="stat-icon-wrapper emerald"><i data-lucide="package"></i></div>
                     <div class="stat-info">
-                        <h3>New Arrivals</h3>
-                        <p class="user-role">Broadcast library books</p>
+                        <h3 style="font-weight: 700;">Arrival Broadcasts</h3>
+                        <p class="user-role">Announce new library items</p>
                     </div>
                 </div>
-                <div class="stat-card" onclick="switchView('admin-interns')">
-                    <div class="stat-icon" style="color: var(--accent-amber)"><i data-lucide="graduation-cap"></i></div>
+                <div class="stat-card premium-hover" onclick="switchView('admin-interns')">
+                    <div class="stat-icon-wrapper amber"><i data-lucide="graduation-cap"></i></div>
                     <div class="stat-info">
-                        <h3>Intern Management</h3>
-                        <p class="user-role">View and add interns</p>
+                        <h3 style="font-weight: 700;">Intern Management</h3>
+                        <p class="user-role">Manage teaching assistants</p>
                     </div>
                 </div>
-                <div class="stat-card" onclick="switchView('admin-classes')">
-                    <div class="stat-icon" style="color: var(--accent-blue)"><i data-lucide="calendar-clock"></i></div>
+                <div class="stat-card premium-hover" onclick="switchView('admin-classes')">
+                    <div class="stat-icon-wrapper blue"><i data-lucide="calendar-clock"></i></div>
                     <div class="stat-info">
-                        <h3>Class Schedule</h3>
-                        <p class="user-role">Manage weekly timetable</p>
+                        <h3 style="font-weight: 700;">Weekly Timetable</h3>
+                        <p class="user-role">Configure class schedules</p>
                     </div>
                 </div>
-                <div class="stat-card" onclick="switchView('admin-users')">
-                    <div class="stat-icon"><i data-lucide="users"></i></div>
+                <div class="stat-card premium-hover" onclick="switchView('admin-users')">
+                    <div class="stat-icon-wrapper blue"><i data-lucide="shield-check"></i></div>
                     <div class="stat-info">
-                        <h3>System Users</h3>
-                        <p class="user-role">Manage admin accounts</p>
+                        <h3 style="font-weight: 700;">System Admins</h3>
+                        <p class="user-role">Manage admin access rights</p>
                     </div>
                 </div>
-                <div class="stat-card" onclick="AuthService.logout()">
-                    <div class="stat-icon"><i data-lucide="log-out"></i></div>
+                <div class="stat-card premium-hover" onclick="AuthService.logout()">
+                    <div class="stat-icon-wrapper rose"><i data-lucide="log-out"></i></div>
                     <div class="stat-info">
-                        <h3>Logout</h3>
-                        <p class="user-role">Securely sign out</p>
+                        <h3 style="font-weight: 700;">Secure Logout</h3>
+                        <p class="user-role">End your current session</p>
                     </div>
                 </div>
             </div>
 
-            <div class="section" id="critical-library-section">
-                <h3 style="color: var(--accent-rose); display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="alert-octagon" style="width: 20px; height: 20px;"></i>
-                    Critical: Day 14+ Library Returns
+            <div class="section slide-up" id="critical-library-section" style="margin-top: 48px; animation-delay: 0.2s;">
+                <h3 style="color: var(--accent-rose); display: flex; align-items: center; gap: 12px; font-weight: 700; margin-bottom: 24px;">
+                    <i data-lucide="alert-octagon" style="width: 24px; height: 24px;"></i>
+                    Critical Alerts: Overdue Library Items
                 </h3>
-                <div class="alerts-list" id="critical-library-list" style="margin-top: 16px;">
+                <div class="alerts-list" id="critical-library-list">
                     <!-- Populated by renderCriticalLibrary -->
                 </div>
             </div>
 
-            <div class="section">
-                <h3>Attendance Summary (Manual Entry)</h3>
-                <div class="stat-card" style="margin-top: 16px;">
-                    <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <p class="user-role">Filter by Grade:</p>
-                        <select id="attendance-grade-filter" class="btn-ghost" style="padding: 6px 12px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
-                            <option value="all">All Grades</option>
-                            ${[...new Set(data.students.map(s => s.grade))].sort().map(g => `<option value="${g}">${g}</option>`).join('')}
-                        </select>
-                        <p class="user-role">Select Class:</p>
-                        <select id="attendance-class-select" class="btn-ghost" style="padding: 6px 12px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
-                            <option value="none">-- Regular Day --</option>
-                            ${data.classes.map(c => `<option value="${c.id}">${c.title} (${c.dayOfWeek})</option>`).join('')}
-                        </select>
-                        <p class="user-role" style="margin-left: auto;">Select Date: <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="padding: 4px 8px; font-size: 12px;" onchange="AdminView.renderAttendanceList()"></p>
+            <div class="section slide-up" style="margin-top: 48px; animation-delay: 0.3s;">
+                <h3 style="font-weight: 700; margin-bottom: 24px;">Daily Attendance & Learning Log</h3>
+                <div class="stat-card" style="padding: 32px;">
+                    <div style="margin-bottom: 32px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <p class="user-role font-xs" style="margin-bottom: 8px;">Filter by Grade</p>
+                            <select id="attendance-grade-filter" class="btn-ghost" style="width: 100%; padding: 10px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
+                                <option value="all">All Grades</option>
+                                ${[...new Set(data.students.map(s => s.grade))].sort().map(g => `<option value="${g}">${g}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <p class="user-role font-xs" style="margin-bottom: 8px;">Target Class</p>
+                            <select id="attendance-class-select" class="btn-ghost" style="width: 100%; padding: 10px; cursor: pointer;" onchange="AdminView.renderAttendanceList()">
+                                <option value="none">-- Regular Day Session --</option>
+                                ${data.classes.map(c => `<option value="${c.id}">${c.title} (${c.dayOfWeek})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <p class="user-role font-xs" style="margin-bottom: 8px;">Session Date</p>
+                            <input type="date" id="attendance-date" value="${new Date().toISOString().split('T')[0]}" class="btn-ghost" style="width: 100%; padding: 8px;" onchange="AdminView.renderAttendanceList()">
+                        </div>
                     </div>
-                    <div class="attendance-setup grid-responsive" style="gap: 20px;">
-                        <div class="student-select">
-                            <div class="student-presence-list" id="attendance-student-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                    
+                    <div class="attendance-setup grid-responsive" style="gap: 32px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 12px; text-transform: uppercase;">Student Roster</p>
+                            <div class="student-presence-list" id="attendance-student-list" style="max-height: 400px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 12px;">
                                 <!-- Populated by renderAttendanceList -->
                             </div>
                         </div>
                         <div class="topic-setup">
-                            <p class="user-role" style="margin-bottom: 10px;">Topics Covered Today:</p>
-                            <textarea id="topics-covered" class="btn-ghost" style="width: 100%; height: 160px; padding: 12px; resize: vertical;" placeholder="e.g. Algebra - Page 45-50..."></textarea>
-                            <button class="btn-primary" style="margin-top: 12px; width: 100%;" onclick="AdminView.saveAttendance()">Save & Notify Parents</button>
+                            <p class="user-role font-xs" style="margin-bottom: 12px; text-transform: uppercase;">Curriculum Covered Today</p>
+                            <textarea id="topics-covered" class="btn-ghost" style="width: 100%; height: 240px; padding: 16px; resize: none; font-size: 15px; line-height: 1.6;" placeholder="Describe what was taught today..."></textarea>
+                            <button class="btn-primary" style="margin-top: 20px; width: 100%; padding: 16px; font-weight: 700;" onclick="AdminView.saveAttendance()">
+                                <i data-lucide="save" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Save & Notify Parents
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -766,11 +784,7 @@ const AdminView = {
                 </div>
             `;
         }).join('');
-        lucide.createIcons();
-    }
-};
-
-const AdminStudentsView = {
+  const AdminStudentsView = {
     render() {
         if (!AuthService.isAdmin()) {
             AdminView.renderAccessDenied();
@@ -779,101 +793,124 @@ const AdminStudentsView = {
         const data = StorageService.getData();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+            <div class="view-header slide-up" style="display: flex; align-items: center; gap: 24px;">
                 <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
                 <div>
-                    <h2>Student Management</h2>
-                    <p>Add new students to the Team 3 roster.</p>
+                    <h2 style="font-size: 28px; font-weight: 700;">Student Management</h2>
+                    <p>Register new members or update existing student profiles.</p>
                 </div>
             </div>
 
-             <div class="section">
-                <div class="grid-responsive" style="gap: 32px;">
-                    <div class="stat-card">
-                        <h3>Register New Student</h3>
-                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
-                            <input type="text" id="new-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
-                            <input type="text" id="new-school" class="btn-ghost" style="padding: 12px;" placeholder="School Name (Optional)">
-                            <input type="text" id="new-parent" class="btn-ghost" style="padding: 12px;" placeholder="Parent Name">
-                            <input type="email" id="new-email" class="btn-ghost" style="padding: 12px;" placeholder="Parent Email">
-                            <input type="tel" id="new-phone" class="btn-ghost" style="padding: 12px;" placeholder="Parent Phone">
-                            <button class="btn-primary" onclick="AdminStudentsView.addStudent()">Register Student</button>
+             <div class="grid-responsive slide-up" style="gap: 32px; margin-top: 32px; animation-delay: 0.1s;">
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Register New Student</h3>
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Full Name</p>
+                            <input type="text" id="new-name" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="e.g. Alice Johnson">
                         </div>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">School Name</p>
+                            <input type="text" id="new-school" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="e.g. Westside Elementary">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Parent Name</p>
+                                <input type="text" id="new-parent" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="Parent's Name">
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Parent Phone</p>
+                                <input type="tel" id="new-phone" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="+91 XXXXX XXXXX">
+                            </div>
+                        </div>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Parent Email</p>
+                            <input type="email" id="new-email" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="parent@email.com">
+                        </div>
+                        <button class="btn-primary" style="padding: 16px; font-weight: 700; margin-top: 12px;" onclick="AdminStudentsView.addStudent()">
+                            <i data-lucide="user-plus" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Register Student
+                        </button>
                     </div>
+                </div>
 
-                    <div class="stat-card">
-                        <h3>Registered Students</h3>
-                        <div class="alerts-list" style="margin-top: 24px; max-height: 400px; overflow-y: auto; padding-right: 8px;">
-                            ${data.students.map(s => `
-                                <div class="alert-item" style="padding: 12px; gap: 12px;">
-                                    <div class="alert-content">
-                                        <p class="alert-msg" style="font-size: 14px;">${s.name}</p>
-                                        <p class="user-role" style="font-size: 10px;">${s.grade || 'No Grade'} | ${s.isLibraryMember ? 'Library Member' : 'Not Member'}</p>
-                                    </div>
-                                    <div style="display: flex; gap: 8px;">
-                                        <button class="icon-btn" onclick="AdminStudentsView.showEditModal(${s.id})" title="Edit Student">
-                                            <i data-lucide="edit-3" style="color: var(--accent-blue);"></i>
-                                        </button>
-                                        <button class="icon-btn" onclick="AdminStudentsView.deleteStudent(${s.id})" title="Delete Student">
-                                            <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
-                                        </button>
-                                    </div>
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Active Roster</h3>
+                    <div class="alerts-list" style="max-height: 520px; overflow-y: auto; padding-right: 12px; display: flex; flex-direction: column; gap: 12px;">
+                        ${data.students.map(s => `
+                            <div class="alert-item premium">
+                                <div class="user-avatar" style="width: 40px; height: 40px; background: var(--accent-blue); flex-shrink: 0; font-size: 16px;">${s.name.charAt(0)}</div>
+                                <div class="alert-content">
+                                    <p class="alert-msg" style="font-size: 15px; font-weight: 600;">${s.name}</p>
+                                    <p class="user-role" style="font-size: 11px;">${s.grade || 'Grade Not Set'} • ${s.isLibraryMember ? 'Premium Member' : 'Standard Member'}</p>
                                 </div>
-                            `).join('')}
-                        </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="icon-btn btn-sm" onclick="AdminStudentsView.showEditModal(${s.id})" title="Edit Student">
+                                        <i data-lucide="edit-3" style="color: var(--accent-blue); width: 14px; height: 14px;"></i>
+                                    </button>
+                                    <button class="icon-btn btn-sm" onclick="AdminStudentsView.deleteStudent(${s.id})" title="Delete Student">
+                                        <i data-lucide="trash-2" style="color: var(--accent-rose); width: 14px; height: 14px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
             </div>
 
             <div id="edit-student-overlay" class="payment-overlay" style="display: none; align-items: center; justify-content: center;">
-                <div class="stat-card" style="width: 100%; max-width: 500px; padding: 32px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                        <h3>Edit Student Details</h3>
+                <div class="stat-card" style="width: 100%; max-width: 500px; padding: 40px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                        <h3 style="font-size: 24px; font-weight: 700;">Edit Student Profile</h3>
                         <button class="icon-btn" onclick="document.getElementById('edit-student-overlay').style.display='none'"><i data-lucide="x"></i></button>
                     </div>
                     <input type="hidden" id="edit-id">
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
                         <div>
-                            <p class="user-role font-xs" style="margin-bottom: 4px;">Student Name</p>
-                            <input type="text" id="edit-name" class="btn-ghost" style="width: 100%; padding: 12px;">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Student Name</p>
+                            <input type="text" id="edit-name" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;">
                         </div>
                         <div>
-                            <p class="user-role font-xs" style="margin-bottom: 4px;">School Name</p>
-                            <input type="text" id="edit-school" class="btn-ghost" style="width: 100%; padding: 12px;">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">School Name</p>
+                            <input type="text" id="edit-school" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;">
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                              <div>
-                                <p class="user-role font-xs" style="margin-bottom: 4px;">Grade</p>
-                                <select id="edit-grade" class="btn-ghost" style="width: 100%; padding: 12px;">
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Grade</p>
+                                <select id="edit-grade" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px; cursor: pointer;">
                                     ${Array.from({length: 12}, (_, i) => `Grade ${i+1}`).map(g => `<option>${g}</option>`).join('')}
                                 </select>
                             </div>
                             <div>
-                                <p class="user-role font-xs" style="margin-bottom: 4px;">Parent Phone</p>
-                                <input type="tel" id="edit-phone" class="btn-ghost" style="width: 100%; padding: 12px;">
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Parent Phone</p>
+                                <input type="tel" id="edit-phone" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;">
                             </div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
-                                <p class="user-role font-xs" style="margin-bottom: 4px;">Library Member</p>
-                                <select id="edit-library" class="btn-ghost" style="width: 100%; padding: 12px;" onchange="document.getElementById('edit-plan-div').style.display = this.value === 'true' ? 'block' : 'none'">
-                                    <option value="true">Yes</option>
-                                    <option value="false">No</option>
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Library Access</p>
+                                <select id="edit-library" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px; cursor: pointer;" onchange="document.getElementById('edit-plan-div').style.display = this.value === 'true' ? 'block' : 'none'">
+                                    <option value="true">Active Member</option>
+                                    <option value="false">Non-Member</option>
                                 </select>
                             </div>
                             <div id="edit-plan-div">
-                                <p class="user-role font-xs" style="margin-bottom: 4px;">Subscription Plan</p>
-                                <select id="edit-plan" class="btn-ghost" style="width: 100%; padding: 12px;">
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Subscription</p>
+                                <select id="edit-plan" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px; cursor: pointer;">
                                     <option>Basic</option>
                                     <option>Premium</option>
                                 </select>
                             </div>
                         </div>
-                        <button class="btn-primary" style="margin-top: 12px;" onclick="AdminStudentsView.updateStudent()">Save Changes</button>
+                        <button class="btn-primary" style="margin-top: 12px; padding: 16px; font-weight: 700;" onclick="AdminStudentsView.updateStudent()">
+                            <i data-lucide="check-circle" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Save Changes
+                        </button>
                     </div>
                 </div>
             </div>
         `;
+        lucide.createIcons();
+    },
+
         lucide.createIcons();
     },
 
@@ -957,11 +994,7 @@ const AdminStudentsView = {
         StorageService.saveData(data);
 
         NotificationSystem.toast(`${name} registered successfully!`, "success");
-        switchView('students');
-    }
-};
-
-const AdminUsersView = {
+  const AdminUsersView = {
     render() {
         if (!AuthService.isAdmin()) {
             AdminView.renderAccessDenied();
@@ -970,41 +1003,51 @@ const AdminUsersView = {
         const data = StorageService.getData();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+            <div class="view-header slide-up" style="display: flex; align-items: center; gap: 24px;">
                 <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
                 <div>
-                    <h2>System User Management</h2>
-                    <p>Add or modify administrative accounts.</p>
+                    <h2 style="font-size: 28px; font-weight: 700;">System User Management</h2>
+                    <p>Add or modify administrative accounts with role-based access.</p>
                 </div>
             </div>
 
-            <div class="section">
-                <div class="grid-responsive" style="gap: 32px;">
-                    <div class="stat-card">
-                        <h3>Create Admin User</h3>
-                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
-                            <input type="text" id="user-display-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
-                            <input type="text" id="user-username" class="btn-ghost" style="padding: 12px;" placeholder="Username">
-                            <input type="password" id="user-password" class="btn-ghost" style="padding: 12px;" placeholder="Password">
-                            <button class="btn-primary" onclick="AdminUsersView.addUser()">Add User</button>
+            <div class="grid-responsive slide-up" style="gap: 32px; margin-top: 32px; animation-delay: 0.1s;">
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Create Admin User</h3>
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Full Name</p>
+                            <input type="text" id="user-display-name" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="e.g. Robert Smith">
                         </div>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Username</p>
+                            <input type="text" id="user-username" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="robert_admin">
+                        </div>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Security Password</p>
+                            <input type="password" id="user-password" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="••••••••">
+                        </div>
+                        <button class="btn-primary" style="padding: 16px; font-weight: 700; margin-top: 12px;" onclick="AdminUsersView.addUser()">
+                            <i data-lucide="user-plus" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Add Admin User
+                        </button>
                     </div>
+                </div>
 
-                    <div class="stat-card">
-                        <h3>Existing Admins</h3>
-                        <div class="alerts-list" style="margin-top: 24px;">
-                            ${data.users.map(u => `
-                                <div class="alert-item" style="padding: 12px; gap: 12px;">
-                                    <div class="alert-content">
-                                        <p class="alert-msg" style="font-size: 14px;">${u.name}</p>
-                                        <p class="user-role" style="font-size: 10px;">@${u.username} | ${u.role.toUpperCase()}</p>
-                                    </div>
-                                    <button class="icon-btn" onclick="AdminUsersView.deleteUser('${u.id}')" ${u.id === 'admin' ? 'disabled' : ''} title="Delete User">
-                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
-                                    </button>
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Existing Administrators</h3>
+                    <div class="alerts-list" style="display: flex; flex-direction: column; gap: 12px;">
+                        ${data.users.map(u => `
+                            <div class="alert-item premium">
+                                <div class="user-avatar" style="width: 40px; height: 40px; background: var(--accent-blue); flex-shrink: 0; font-size: 16px;">${u.name.charAt(0)}</div>
+                                <div class="alert-content">
+                                    <p class="alert-msg" style="font-size: 15px; font-weight: 600;">${u.name}</p>
+                                    <p class="user-role" style="font-size: 11px;">@${u.username} • ${u.role.toUpperCase()}</p>
                                 </div>
-                            `).join('')}
-                        </div>
+                                <button class="icon-btn btn-sm" onclick="AdminUsersView.deleteUser('${u.id}')" ${u.id === 'admin' ? 'disabled' : ''} title="Delete User">
+                                    <i data-lucide="trash-2" style="color: var(--accent-rose); width: 14px; height: 14px;"></i>
+                                </button>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
             </div>
@@ -1077,36 +1120,52 @@ const FeesView = {
 
             const billHtml = `
                 <div class="payment-overlay" id="bill-overlay" style="display: flex; align-items: center; justify-content: center;">
-                    <div class="stat-card" style="width: 100%; max-width: 400px; padding: 40px; background: white; color: #1a1a1a;">
-                        <div style="text-align: center; margin-bottom: 30px;">
-                            <h2 style="color: #1a1a1a; margin-bottom: 8px;">Book Buddy</h2>
-                            <p style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Fee Invoice / Bill</p>
+                    <div class="stat-card" style="width: 100%; max-width: 440px; padding: 48px; background: white; color: #1a1a1a; box-shadow: 0 32px 64px rgba(0,0,0,0.4);">
+                        <div style="text-align: center; margin-bottom: 32px; border-bottom: 2px solid #f0f0f0; padding-bottom: 24px;">
+                            <h2 style="color: #1a1a1a; margin-bottom: 4px; font-size: 28px; letter-spacing: -1px;">Book Buddy</h2>
+                            <p style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Official Fee Invoice</p>
                         </div>
-                        <div style="margin-bottom: 24px; font-size: 14px;">
-                            <p><strong>Student:</strong> ${student.name}</p>
-                            <p><strong>Grade:</strong> ${student.grade}</p>
-                            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                        <div style="margin-bottom: 32px; font-size: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <p style="color: #999; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Student Name</p>
+                                <p style="font-weight: 700;">${student.name}</p>
+                            </div>
+                            <div>
+                                <p style="color: #999; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Grade Level</p>
+                                <p style="font-weight: 700;">${student.grade}</p>
+                            </div>
+                            <div>
+                                <p style="color: #999; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Invoice Date</p>
+                                <p style="font-weight: 700;">${new Date().toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                                <p style="color: #999; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Invoice #</p>
+                                <p style="font-weight: 700;">INV-${Math.floor(Math.random()*10000)}</p>
+                            </div>
                         </div>
-                        <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 16px 0; margin-bottom: 24px;">
+                        <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 20px 0; margin-bottom: 32px;">
                             ${unpaidFees.map(f => `
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                    <span>${f.month} Fee</span>
-                                    <span>₹${f.amount.toLocaleString()}</span>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                                    <span style="color: #555;">${f.month} Fee Record</span>
+                                    <span style="font-weight: 700;">₹${f.amount.toLocaleString()}</span>
                                 </div>
                             `).join('')}
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 18px; margin-bottom: 32px;">
-                            <span>Total Due</span>
+                        <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 22px; margin-bottom: 40px; color: #000;">
+                            <span>Total Amount</span>
                             <span>₹${total.toLocaleString()}</span>
                         </div>
-                        <div style="display: flex; gap: 12px;">
-                            <button class="btn-primary" style="flex: 1; background: #1a1a1a;" onclick="window.print()">Print Bill</button>
-                            <button class="btn-ghost" style="flex: 1;" onclick="document.getElementById('bill-overlay').remove()">Close</button>
+                        <div style="display: flex; gap: 16px;">
+                            <button class="btn-primary" style="flex: 1; background: #000; border-radius: 12px; padding: 16px;" onclick="window.print()">
+                                <i data-lucide="printer" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Print
+                            </button>
+                            <button class="btn-ghost" style="flex: 1; border-radius: 12px; border-color: #ddd; color: #666;" onclick="document.getElementById('bill-overlay').remove()">Dismiss</button>
                         </div>
                     </div>
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', billHtml);
+            lucide.createIcons();
         };
 
         const totalOutstanding = data.fees.filter(f => f.status !== 'paid').reduce((sum, f) => sum + f.amount, 0);
@@ -1120,19 +1179,19 @@ const FeesView = {
             if (f.status !== 'paid') {
                 const safeName  = student.name.replace(/'/g, "\\'");
                 const safeMonth = f.month.replace(/'/g, "\\'");
-                actions += `<button class="btn-primary" style="padding:6px 14px;font-size:12px;" onclick="PaymentModal.show(${f.id},'${safeName}','${safeMonth}',${f.amount})"><i data-lucide="credit-card" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Pay Now</button>`;
+                actions += `<button class="btn-primary btn-sm" onclick="PaymentModal.show(${f.id},'${safeName}','${safeMonth}',${f.amount})"><i data-lucide="credit-card" style="width:12px;height:12px;margin-right:6px;"></i>Pay Now</button>`;
                 if (isAdmin) {
-                    actions += `<button class="btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="FeesView.markPaid(${f.id})"><i data-lucide="check" style="width:11px;height:11px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Mark Paid</button>`;
-                    actions += `<button class="icon-btn" style="width:32px;height:32px;" onclick="FeesView.deleteItem(${f.id})" title="Delete"><i data-lucide="trash-2" style="color:var(--accent-rose);width:14px;height:14px;"></i></button>`;
+                    actions += `<button class="btn-ghost btn-sm" onclick="FeesView.markPaid(${f.id})"><i data-lucide="check" style="width:12px;height:12px;margin-right:6px;"></i>Mark Paid</button>`;
+                    actions += `<button class="icon-btn btn-sm" onclick="FeesView.deleteItem(${f.id})" title="Delete"><i data-lucide="trash-2" style="color:var(--accent-rose);width:14px;height:14px;"></i></button>`;
                 }
             }
-            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-primary);border-radius:var(--radius-sm);flex-wrap:wrap;gap:8px;">
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-primary);border-radius:12px;flex-wrap:wrap;gap:12px;border: 1px solid var(--glass-border);">
                         <div>
-                            <span style="font-weight:600;font-size:14px;">${f.month}</span>
-                            <span style="color:var(--text-secondary);font-size:12px;margin-left:8px;">Due: ${f.dueDate}</span>
+                            <p style="font-weight:600;font-size:14px;">${f.month} Fee</p>
+                            <p style="color:var(--text-secondary);font-size:11px;margin-top:2px;">Deadline: ${f.dueDate}</p>
                         </div>
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                            <span style="font-weight:700;font-size:15px;">&#8377;${f.amount.toLocaleString()}</span>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                            <span style="font-weight:700;font-size:16px;">&#8377;${f.amount.toLocaleString()}</span>
                             <span class="badge ${statusBadge}">${f.status}</span>
                             ${actions}
                         </div>
@@ -1146,89 +1205,106 @@ const FeesView = {
                     const studentFees = data.fees.filter(f => f.studentId === student.id && f.status !== 'paid');
                     const feeDetails = studentFees.map(f => `${f.month} (₹${f.amount})`).join(', ');
                     const msg = `Greetings from Book Buddy! Hello ${student.parentName}, a reminder for ${student.name}'s fee of ₹${totalDue.toLocaleString()} for ${feeDetails}. Please clear it soon.`;
-                    return `<button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')"><i data-lucide="send" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Send Reminder</button>`;
+                    return `<button class="btn-ghost btn-sm" onclick="NotificationSystem.sendDirectMessage('${student.parentPhone}', '${msg}')"><i data-lucide="send" style="width:12px;height:12px;margin-right:6px;"></i>Notify Parent</button>`;
                 })()
                 : '';
-            const dueText  = totalDue > 0 ? `&nbsp;&middot;&nbsp;<strong style="color:var(--accent-rose);">&#8377;${totalDue.toLocaleString()} due</strong>` : '';
-            const paidText = paid > 0 ? `&nbsp;&middot;&nbsp;<span style="color:var(--accent-emerald);">&#8377;${paid.toLocaleString()} paid</span>` : '';
+            const dueText  = totalDue > 0 ? `&nbsp;•&nbsp;<strong style="color:var(--accent-rose);">&#8377;${totalDue.toLocaleString()} due</strong>` : '';
+            const paidText = paid > 0 ? `&nbsp;•&nbsp;<span style="color:var(--accent-emerald);">&#8377;${paid.toLocaleString()} cleared</span>` : '';
             const feeRows  = buildFeeRows(studentFees, student);
             const feeBody  = feeRows
-                ? `<div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--border-color);">${feeRows}</div>`
-                : `<p class="user-role" style="font-size:13px;padding-top:12px;border-top:1px solid var(--border-color);">No fee records yet.</p>`;
-            return `<div class="stat-card" style="padding:20px 24px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;${studentFees.length > 0 ? 'margin-bottom:16px;' : ''}">
-                            <div style="display:flex;align-items:center;gap:14px;">
-                                <div class="user-avatar" style="width:46px;height:46px;font-size:20px;font-weight:700;flex-shrink:0;background:var(--accent-blue);">${student.name.charAt(0)}</div>
+                ? `<div style="display:flex;flex-direction:column;gap:12px;padding-top:20px;border-top:1px solid var(--glass-border);">${feeRows}</div>`
+                : `<p class="user-role" style="font-size:13px;padding-top:16px;border-top:1px solid var(--glass-border); text-align: center;">No payment history found.</p>`;
+            
+            return `<div class="stat-card premium-border" style="padding:24px 32px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;${studentFees.length > 0 ? 'margin-bottom:20px;' : ''}">
+                            <div style="display:flex;align-items:center;gap:18px;">
+                                <div class="user-avatar" style="width:52px;height:52px;font-size:22px;font-weight:700;flex-shrink:0;background:var(--accent-blue);">${student.name.charAt(0)}</div>
                                 <div>
-                                    <p style="font-weight:600;font-size:15px;margin-bottom:4px;">${student.name}</p>
-                                    <p class="user-role" style="font-size:12px;display:flex;align-items:center;gap:6px;">
-                                        <span style="width:8px;height:8px;border-radius:50%;background:${statusColor};display:inline-block;flex-shrink:0;"></span>
+                                    <p style="font-weight:700;font-size:17px;margin-bottom:6px; letter-spacing: -0.3px;">${student.name}</p>
+                                    <p class="user-role" style="font-size:12px;display:flex;align-items:center;gap:8px;">
+                                        <span style="width:8px;height:8px;border-radius:50%;background:${statusColor};display:inline-block;box-shadow: 0 0 8px ${statusColor};"></span>
                                         ${statusLabel}${dueText}${paidText}
                                     </p>
                                 </div>
                             </div>
-                            ${reminderBtn}
-                            ${isAdmin && totalDue > 0 ? `<button class="icon-btn" onclick="generateBill(${student.id})" title="Generate Bill"><i data-lucide="file-text"></i></button>` : ''}
+                            <div style="display: flex; gap: 12px;">
+                                ${reminderBtn}
+                                ${isAdmin && totalDue > 0 ? `<button class="icon-btn btn-sm" onclick="generateBill(${student.id})" title="Generate PDF Bill"><i data-lucide="file-text"></i></button>` : ''}
+                            </div>
                         </div>
                         ${feeBody}
                     </div>`;
         };
 
         const adminAddForm = isAdmin ? `
-            <div class="section">
-                <h3 style="margin-bottom:16px;font-weight:600;">Add Fee Record</h3>
-                <div class="stat-card">
-                    <div class="grid-responsive" style="gap:16px;">
+            <div class="section slide-up" style="animation-delay: 0.1s;">
+                <h3 style="margin-bottom:20px;font-weight:700; font-size: 20px;">Record New Fee Item</h3>
+                <div class="stat-card" style="padding: 32px;">
+                    <div class="grid-responsive" style="gap:20px;">
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom:8px;">Student</p>
-                            <select id="fee-student" class="btn-ghost" style="width:100%;padding:12px;font-size:14px;cursor:pointer;">
-                                <option value="">Select Student...</option>
+                            <p class="user-role font-xs" style="margin-bottom:8px; text-transform: uppercase;">Select Student</p>
+                            <select id="fee-student" class="btn-ghost" style="width:100%;padding:14px;font-size:15px;cursor:pointer;">
+                                <option value="">Choose Student...</option>
                                 ${data.students.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
                             </select>
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom:8px;">Month</p>
-                            <input type="text" id="fee-month" class="btn-ghost" style="width:100%;padding:12px;" placeholder="e.g. May 2026" value="${new Date().toLocaleString('default',{month:'long'})} ${new Date().getFullYear()}">
+                            <p class="user-role font-xs" style="margin-bottom:8px; text-transform: uppercase;">Billing Month</p>
+                            <input type="text" id="fee-month" class="btn-ghost" style="width:100%;padding:14px; font-size: 15px;" placeholder="e.g. May 2026" value="${new Date().toLocaleString('default',{month:'long'})} ${new Date().getFullYear()}">
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom:8px;">Amount (&#8377;)</p>
-                            <input type="number" id="fee-amount" class="btn-ghost" style="width:100%;padding:12px;" placeholder="1500" value="1500">
+                            <p class="user-role font-xs" style="margin-bottom:8px; text-transform: uppercase;">Amount (₹)</p>
+                            <input type="number" id="fee-amount" class="btn-ghost" style="width:100%;padding:14px; font-size: 15px;" placeholder="1500" value="1500">
                         </div>
                         <div>
-                            <p class="user-role font-sm" style="margin-bottom:8px;">Due Date</p>
-                            <input type="date" id="fee-due" class="btn-ghost" style="width:100%;padding:12px;" value="${new Date(Date.now()+15*24*60*60*1000).toISOString().split('T')[0]}">
+                            <p class="user-role font-xs" style="margin-bottom:8px; text-transform: uppercase;">Payment Deadline</p>
+                            <input type="date" id="fee-due" class="btn-ghost" style="width:100%;padding:14px; font-size: 15px;" value="${new Date(Date.now()+15*24*60*60*1000).toISOString().split('T')[0]}">
                         </div>
                     </div>
-                    <button class="btn-primary" style="margin-top:16px;" onclick="FeesView.addFee()"><i data-lucide="plus" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>Add Fee Record</button>
+                    <button class="btn-primary" style="margin-top:24px; padding: 16px; font-weight: 700;" onclick="FeesView.addFee()">
+                        <i data-lucide="plus-circle" style="width:18px;height:18px;margin-right:8px;display:inline-block;vertical-align:middle;"></i> Create Fee Record
+                    </button>
                 </div>
             </div>` : '';
 
         container.innerHTML = `
-            <div class="view-header">
-                <h2>Fee Management</h2>
-                <p>Track and manage fee payments for all students.</p>
+            <div class="view-header slide-up">
+                <h2 style="font-size: 32px; font-weight: 700;">Financial Center</h2>
+                <p>Track student tuition, library fees, and payment histories in real-time.</p>
             </div>
-            <div class="dashboard-grid" style="margin-bottom:32px;">
+            <div class="dashboard-grid slide-up" style="margin-bottom:48px; animation-delay: 0.1s;">
                 <div class="stat-card">
-                    <div class="stat-icon" style="background:rgba(244,63,94,0.1);color:var(--accent-rose);"><i data-lucide="alert-circle"></i></div>
-                    <div class="stat-info"><h3>Total Outstanding</h3><p class="value" style="color:var(--accent-rose);">&#8377;${totalOutstanding.toLocaleString()}</p></div>
+                    <div class="stat-icon-wrapper rose"><i data-lucide="alert-circle"></i></div>
+                    <div class="stat-info">
+                        <h3 style="font-weight: 700;">Total Outstanding</h3>
+                        <p class="value" style="color:var(--accent-rose); font-size: 28px;">&#8377;${totalOutstanding.toLocaleString()}</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:var(--accent-emerald);"><i data-lucide="check-circle"></i></div>
-                    <div class="stat-info"><h3>Total Collected</h3><p class="value" style="color:var(--accent-emerald);">&#8377;${totalCollected.toLocaleString()}</p></div>
+                    <div class="stat-icon-wrapper emerald"><i data-lucide="check-circle-2"></i></div>
+                    <div class="stat-info">
+                        <h3 style="font-weight: 700;">Revenue Collected</h3>
+                        <p class="value" style="color:var(--accent-emerald); font-size: 28px;">&#8377;${totalCollected.toLocaleString()}</p>
+                    </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon"><i data-lucide="users"></i></div>
-                    <div class="stat-info"><h3>Students with Dues</h3><p class="value">${studentsWithDues}</p></div>
+                    <div class="stat-icon-wrapper blue"><i data-lucide="users"></i></div>
+                    <div class="stat-info">
+                        <h3 style="font-weight: 700;">Pending Accounts</h3>
+                        <p class="value" style="font-size: 28px;">${studentsWithDues}</p>
+                    </div>
                 </div>
             </div>
             ${adminAddForm}
-            <div class="section">
-                <h3 style="margin-bottom:16px;font-weight:600;">Student-wise Fee Status</h3>
-                <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="section slide-up" style="margin-top: 48px; animation-delay: 0.2s;">
+                <h3 style="margin-bottom:24px;font-weight:700; font-size: 20px;">Student Ledger</h3>
+                <div style="display:flex;flex-direction:column;gap:20px;">
                     ${studentSummaries.map(s => buildStudentCard(s)).join('')}
                 </div>
             </div>`;
+        lucide.createIcons();
+    },
+  </div>`;
         lucide.createIcons();
     },
 
@@ -1255,38 +1331,33 @@ const FeesView = {
     deleteItem(id) {
         if (confirm("Delete this fee record?")) {
             StorageService.removeFromCollection('fees', id);
-            NotificationSystem.toast("Fee record deleted", "success");
-            this.render();
-        }
-    }
-};
-
-const WorksheetsView = {
+            NotificationSystem.toast("Fee recoconst WorksheetsView = {
     render() {
         const data = StorageService.getData();
         const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-           <div class="view-header">
-               <h2>Worksheets & Games</h2>
-               <p>Access and announce new educational resources.</p>
+           <div class="view-header slide-up">
+               <h2 style="font-size: 32px; font-weight: 700;">Learning Resources</h2>
+               <p>Access interactive worksheets, educational games, and digital kits.</p>
            </div>
-           <div class="section">
-               <div class="alerts-list">
+           <div class="section slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
+               <div class="alerts-list" style="display: flex; flex-direction: column; gap: 16px;">
                    ${data.worksheets.map(w => `
-                       <div class="alert-item">
+                       <div class="alert-item premium">
                            <div class="alert-indicator" style="background: var(--accent-blue)"></div>
+                           <div class="alert-icon-circle"><i data-lucide="file-text"></i></div>
                            <div class="alert-content">
-                                <p class="alert-msg">${w.title} (Launched: ${w.launched})</p>
-                                <p class="user-role">Difficulty: ${w.difficulty}</p>
+                                <p class="alert-msg" style="font-size: 16px; font-weight: 600;">${w.title}</p>
+                                <p class="user-role">Difficulty: ${w.difficulty} • Released: ${w.launched}</p>
                             </div>
                             <div style="display: flex; gap: 12px; align-items: center;">
-                                <button class="btn-primary" style="padding: 10px 20px; font-size: 13px;" onclick="NotificationSystem.toast('Launching ${w.title}...', 'info')">
-                                    <i data-lucide="play" style="width: 14px; height: 14px; margin-right: 8px;"></i> Start Worksheet
+                                <button class="btn-primary" style="padding: 12px 24px; font-size: 14px; font-weight: 600;" onclick="NotificationSystem.toast('Initializing ${w.title}...', 'info')">
+                                    <i data-lucide="play" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Launch
                                 </button>
                                 ${isAdmin ? `
-                                    <button class="icon-btn" onclick="WorksheetsView.deleteItem(${w.id})" title="Delete Worksheet"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                    <button class="btn-ghost" onclick="NotificationSystem.triggerUpdateBroadcast('Worksheet', '${w.title}')">Announce</button>
+                                    <button class="btn-ghost btn-sm" onclick="NotificationSystem.triggerUpdateBroadcast('Worksheet', '${w.title}')">Broadcast</button>
+                                    <button class="icon-btn btn-sm" onclick="WorksheetsView.deleteItem(${w.id})" title="Delete Worksheet"><i data-lucide="trash-2" style="color: var(--accent-rose); width: 14px; height: 14px;"></i></button>
                                 ` : ''}
                             </div>
                         </div>
@@ -1312,25 +1383,27 @@ const NewspapersView = {
         const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-           <div class="view-header">
-               <h2>Digital Newspapers</h2>
+           <div class="view-header slide-up">
+               <h2 style="font-size: 32px; font-weight: 700;">Digital Library</h2>
+               <p>Daily editions and educational periodicals for Team 3 students.</p>
            </div>
-           <div class="section">
-               <div class="alerts-list">
+           <div class="section slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
+               <div class="alerts-list" style="display: flex; flex-direction: column; gap: 16px;">
                    ${data.newspapers.map(n => `
-                       <div class="alert-item">
+                       <div class="alert-item premium">
                            <div class="alert-indicator" style="background: var(--accent-blue)"></div>
+                           <div class="alert-icon-circle"><i data-lucide="newspaper"></i></div>
                            <div class="alert-content">
-                                <p class="alert-msg">${n.title}</p>
-                                <p class="user-role">Published: ${new Date(n.launched).toLocaleString()}</p>
+                                <p class="alert-msg" style="font-size: 16px; font-weight: 600;">${n.title}</p>
+                                <p class="user-role">Published: ${new Date(n.launched).toLocaleDateString()} • Edition: Digital</p>
                             </div>
                             <div style="display: flex; gap: 12px; align-items: center;">
-                                <button class="btn-ghost" style="padding: 10px 20px; font-size: 13px;" onclick="window.open('${n.url}', '_blank')">
-                                    <i data-lucide="external-link" style="width: 14px; height: 14px; margin-right: 8px;"></i> Read Newspaper
+                                <button class="btn-ghost" style="padding: 12px 24px; font-size: 14px; font-weight: 600;" onclick="window.open('${n.url}', '_blank')">
+                                    <i data-lucide="external-link" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Open Reader
                                 </button>
                                 ${isAdmin ? `
-                                    <button class="icon-btn" onclick="NewspapersView.deleteItem(${n.id})" title="Delete Newspaper"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                    <button class="btn-primary" onclick="NotificationSystem.triggerUpdateBroadcast('Newspaper', '${n.title}')">Dispatch to Group</button>
+                                    <button class="btn-primary" onclick="NotificationSystem.triggerUpdateBroadcast('Newspaper', '${n.title}')">Group Dispatch</button>
+                                    <button class="icon-btn btn-sm" onclick="NewspapersView.deleteItem(${n.id})" title="Delete Newspaper"><i data-lucide="trash-2" style="color: var(--accent-rose); width: 14px; height: 14px;"></i></button>
                                 ` : ''}
                             </div>
                         </div>
@@ -1356,29 +1429,31 @@ const StudentsView = {
         const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header">
-                <h2>Student Roster</h2>
-                <p>Full list of students enrolled in Team 3.</p>
+            <div class="view-header slide-up">
+                <h2 style="font-size: 32px; font-weight: 700;">Student Roster</h2>
+                <p>Complete directory of students enrolled in the current academic year.</p>
             </div>
-            <div class="section">
-                <div class="alerts-list">
+            <div class="section slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
+                <div class="alerts-list" style="display: flex; flex-direction: column; gap: 12px;">
                     ${data.students.map(s => `
-                        <div class="alert-item">
-                            <div class="user-avatar" style="width: 42px; height: 42px; background: var(--accent-blue); flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: 700; font-size: 18px;">
+                        <div class="alert-item premium">
+                            <div class="user-avatar" style="width: 46px; height: 46px; background: var(--accent-blue); flex-shrink: 0; font-size: 18px;">
                                 ${s.name.charAt(0)}
                             </div>
                             <div class="alert-content">
-                                <p class="alert-msg">${s.name}</p>
+                                <p class="alert-msg" style="font-size: 16px; font-weight: 700;">${s.name}</p>
                                 ${isAdmin
-                                    ? `<p class="user-role">Parent: ${s.parentName} | ${s.parentPhone}</p>`
-                                    : `<p class="user-role" style="font-size: 12px; margin-bottom: 6px;">Student ID: #TS3-${s.id.toString().padStart(3,'0')}</p>
-                                       <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-secondary); font-size: 10px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border-color); width: fit-content; padding: 4px 8px;">
-                                            <i data-lucide="lock" style="width:10px;height:10px;"></i> Profile: Admin Only
-                                       </span>`
+                                    ? `<p class="user-role" style="font-size: 12px; margin-top: 2px;">Parent: ${s.parentName} • <span style="opacity: 0.8;">${s.parentPhone}</span></p>`
+                                    : `<div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                        <p class="user-role" style="font-size: 11px;">#TS3-${s.id.toString().padStart(3,'0')}</p>
+                                        <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-secondary); font-size: 9px; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                                <i data-lucide="lock" style="width:10px;height:10px;"></i> Secured Profile
+                                        </span>
+                                       </div>`
                                 }
                             </div>
                             ${isAdmin
-                                ? `<button class="btn-ghost" onclick="switchView('profile', ${s.id})">View Profile</button>`
+                                ? `<button class="btn-ghost btn-sm" onclick="switchView('profile', ${s.id})">Full Profile</button>`
                                 : ``
                             }
                         </div>
@@ -1592,35 +1667,35 @@ const BlueprintView = {
     render() {
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header">
-                <h2>Campus Blueprint</h2>
+            <div class="view-header slide-up">
+                <h2 style="font-size: 32px; font-weight: 700;">Campus Blueprint</h2>
                 <p>Interactive architectural overview of Team 3 School Campus.</p>
             </div>
 
-            <div class="section">
-                <div class="blueprint-container stat-card">
-                    <img src="assets/school_blueprint.png" alt="School Blueprint" class="blueprint-img">
+            <div class="section slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
+                <div class="blueprint-container stat-card premium-border" style="padding: 0; overflow: hidden; position: relative;">
+                    <img src="assets/school_blueprint.png" alt="School Blueprint" class="blueprint-img" style="width: 100%; height: auto; display: block; border-radius: 16px;">
                     
                     <!-- Labels / Pins -->
                     <div class="blueprint-label" style="top: 30%; left: 20%;">
                         <div class="pin"></div>
-                        <span>Admin Office</span>
+                        <span style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">Admin Office</span>
                     </div>
                     <div class="blueprint-label" style="top: 25%; left: 60%;">
-                        <div class="pin active"></div>
-                        <span>Team 3 Classroom</span>
+                        <div class="pin active" style="box-shadow: 0 0 15px var(--accent-rose);"></div>
+                        <span style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">Team 3 Classroom</span>
                     </div>
                     <div class="blueprint-label" style="top: 60%; left: 40%;">
                         <div class="pin"></div>
-                        <span>Central Library</span>
+                        <span style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">Central Library</span>
                     </div>
                     <div class="blueprint-label" style="top: 70%; left: 75%;">
                         <div class="pin"></div>
-                        <span>Science Lab</span>
+                        <span style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">Science Lab</span>
                     </div>
                     <div class="blueprint-label" style="top: 45%; left: 45%;">
                         <div class="pin"></div>
-                        <span>Sports Plaza</span>
+                        <span style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">Sports Plaza</span>
                     </div>
                 </div>
             </div>
@@ -1644,21 +1719,26 @@ const PerformanceView = {
         });
 
         container.innerHTML = `
-            <div class="view-header">
-                <h2>Performance Analytics</h2>
+            <div class="view-header slide-up">
+                <h2 style="font-size: 32px; font-weight: 700;">Performance Analytics</h2>
                 <p>Class-wide academic performance and subject benchmarks.</p>
             </div>
 
-            <div class="section">
-                <h3>Subject Averages</h3>
-                <div class="dashboard-grid" style="margin-top: 24px;">
+            <div class="section slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
+                <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Subject Benchmarks</h3>
+                <div class="dashboard-grid">
                     ${averages.map(avg => `
-                        <div class="stat-card">
+                        <div class="stat-card premium-border" style="padding: 24px;">
                             <div class="stat-info">
-                                <h3>${avg.subject} Average</h3>
-                                <p class="value">${avg.average}%</p>
-                                <div class="progress-container">
-                                    <div class="progress-bar" style="width: ${avg.average}%; background: var(--accent-blue)"></div>
+                                <h3 style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px;">${avg.subject}</h3>
+                                <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 16px;">
+                                    <p class="value" style="font-size: 32px; font-weight: 800;">${avg.average}%</p>
+                                    <span style="font-size: 12px; color: ${avg.average >= 75 ? 'var(--accent-emerald)' : 'var(--text-secondary)'}">
+                                        ${avg.average >= 75 ? '↑ Above Avg' : '− Average'}
+                                    </span>
+                                </div>
+                                <div class="progress-container" style="height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden;">
+                                    <div class="progress-bar" style="width: ${avg.average}%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-blue-glow)); border-radius: 4px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -1666,19 +1746,26 @@ const PerformanceView = {
                 </div>
             </div>
 
-            <div class="section">
-                <h3>Top Performers</h3>
-                <div class="alerts-list">
-                    ${data.students.slice(0, 3).map(s => `
-                        <div class="alert-item">
-                            <div class="user-avatar" style="background: var(--accent-emerald)">${s.name.charAt(0)}</div>
-                            <div class="alert-content">
-                                <p class="alert-msg">${s.name}</p>
-                                <p class="user-role">Consistently High Performance</p>
+            <div class="section slide-up" style="margin-top: 48px; animation-delay: 0.2s;">
+                <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Top Performers</h3>
+                <div class="alerts-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    ${data.students.slice(0, 3).map((s, idx) => {
+                        const isTop = idx === 0;
+                        return `
+                            <div class="alert-item premium" style="${isTop ? 'border-left: 4px solid var(--accent-amber); background: linear-gradient(90deg, rgba(245,158,11,0.05), transparent);' : ''}">
+                                <div class="user-avatar" style="width: 46px; height: 46px; background: ${isTop ? 'var(--accent-amber)' : 'var(--accent-emerald)'}; color: white; font-size: 18px; font-weight: 800;">
+                                    ${s.name.charAt(0)}
+                                </div>
+                                <div class="alert-content">
+                                    <p class="alert-msg" style="font-size: 16px; font-weight: 700; color: ${isTop ? 'var(--accent-amber)' : 'var(--text-primary)'};">${s.name}</p>
+                                    <p class="user-role" style="font-size: 12px;">Consistently High Performance • Honor Roll</p>
+                                </div>
+                                <div class="badge" style="background: ${isTop ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)'}; color: ${isTop ? 'var(--accent-amber)' : 'var(--accent-emerald)'}; font-size: 11px; padding: 6px 12px; font-weight: 700;">
+                                    <i data-lucide="${isTop ? 'award' : 'star'}" style="width: 12px; height: 12px; margin-right: 4px; display: inline-block; vertical-align: middle;"></i> Rank #${idx + 1}
+                                </div>
                             </div>
-                            <div class="badge badge-emerald">Rank #${data.students.indexOf(s) + 1}</div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
@@ -1865,70 +1952,70 @@ window.WorksheetsView = WorksheetsView;
 window.NewspapersView = NewspapersView;
 window.StudentsView = StudentsView;
 window.ProfileView = ProfileView;
-window.BlueprintView = BlueprintView;
-window.PerformanceView = PerformanceView;
-
 const EventsView = {
     render() {
         const data = StorageService.getData();
         const isAdmin = AuthService.isAdmin();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header">
-                <h2>Campus Events</h2>
+            <div class="view-header slide-up">
+                <h2 style="font-size: 32px; font-weight: 700;">Campus Events</h2>
                 <p>Stay updated with the latest happenings at Book Buddy.</p>
             </div>
             
-            <div class="section">
+            <div class="section slide-up" style="margin-top: 32px; animation-delay: 0.1s;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <h3>Upcoming Events</h3>
-                    ${isAdmin ? `<button class="btn-primary" onclick="EventsView.showAddModal()"><i data-lucide="plus"></i> Add Event</button>` : ''}
+                    <h3 style="font-size: 20px; font-weight: 700; margin: 0;">Upcoming Events</h3>
+                    ${isAdmin ? `<button class="btn-primary" style="padding: 10px 20px; font-size: 13px;" onclick="EventsView.showAddModal()"><i data-lucide="plus" style="width: 14px; height: 14px; margin-right: 6px; display: inline-block; vertical-align: middle;"></i> Schedule Event</button>` : ''}
                 </div>
-                <div class="alerts-list">
+                <div class="alerts-list" style="display: flex; flex-direction: column; gap: 16px;">
                     ${data.events.map(e => `
-                        <div class="alert-item">
+                        <div class="alert-item premium">
                             <div class="alert-indicator" style="background: var(--accent-amber)"></div>
+                            <div class="alert-icon-circle" style="background: rgba(245,158,11,0.1); color: var(--accent-amber);"><i data-lucide="calendar"></i></div>
                             <div class="alert-content">
-                                <p class="alert-msg" style="font-size: 16px;">${e.title}</p>
-                                <p class="user-role">${e.date} at ${e.time} | ${e.location}</p>
+                                <p class="alert-msg" style="font-size: 16px; font-weight: 700;">${e.title}</p>
+                                <p class="user-role" style="font-size: 12px; margin-top: 2px;">${new Date(e.date).toLocaleDateString()} at ${e.time} • <span style="font-weight: 600;">${e.location}</span></p>
                             </div>
-                            <div style="display: flex; gap: 8px;">
+                            <div style="display: flex; gap: 12px; align-items: center;">
                                 ${isAdmin ? `
-                                    <button class="icon-btn" onclick="EventsView.deleteEvent(${e.id})"><i data-lucide="trash-2" style="color: var(--accent-rose);"></i></button>
-                                    <button class="btn-ghost" onclick="NotificationSystem.triggerUpdateBroadcast('Event', '${e.title}')">Broadcast</button>
+                                    <button class="btn-ghost btn-sm" onclick="NotificationSystem.triggerUpdateBroadcast('Event', '${e.title}')"><i data-lucide="radio" style="width: 14px; height: 14px; margin-right: 6px;"></i> Broadcast</button>
+                                    <button class="icon-btn btn-sm" onclick="EventsView.deleteEvent(${e.id})" title="Delete Event"><i data-lucide="trash-2" style="color: var(--accent-rose); width: 14px; height: 14px;"></i></button>
                                 ` : ''}
                             </div>
                         </div>
-                    `).join('')}
+                    `).join('') || '<div style="text-align: center; padding: 40px 0;"><p class="user-role">No upcoming events scheduled.</p></div>'}
                 </div>
             </div>
 
             <div id="event-modal-overlay" class="payment-overlay" style="display: none; align-items: center; justify-content: center;">
-                <div class="stat-card" style="width: 100%; max-width: 550px; padding: 32px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                        <h3>Schedule New Event</h3>
+                <div class="stat-card" style="width: 100%; max-width: 550px; padding: 40px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                        <h3 style="font-size: 24px; font-weight: 700;">Schedule New Event</h3>
                         <button class="icon-btn" onclick="document.getElementById('event-modal-overlay').style.display='none'"><i data-lucide="x"></i></button>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; flex-direction: column; gap: 24px;">
                         <div>
-                            <p class="user-role font-xs" style="margin-bottom:4px;">Event Title</p>
-                            <input type="text" id="ev-title" class="btn-ghost" style="width:100%; padding: 12px;" placeholder="e.g. Annual Day 2026">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Event Title</p>
+                            <input type="text" id="ev-title" class="btn-ghost" style="width:100%; padding: 14px; font-size: 15px;" placeholder="e.g. Annual Day 2026">
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
-                                <p class="user-role font-xs" style="margin-bottom:4px;">Date</p>
-                                <input type="date" id="ev-date" class="btn-ghost" style="width:100%; padding: 12px;">
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Date</p>
+                                <input type="date" id="ev-date" class="btn-ghost" style="width:100%; padding: 14px; font-size: 15px;">
                             </div>
                             <div>
-                                <p class="user-role font-xs" style="margin-bottom:4px;">Time</p>
-                                <input type="time" id="ev-time" class="btn-ghost" style="width:100%; padding: 12px;">
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Time</p>
+                                <input type="time" id="ev-time" class="btn-ghost" style="width:100%; padding: 14px; font-size: 15px;">
                             </div>
                         </div>
                          <div>
-                            <p class="user-role font-xs" style="margin-bottom:4px;">Location</p>
-                            <input type="text" id="ev-loc" class="btn-ghost" style="width:100%; padding: 12px;" placeholder="e.g. Main Auditorium">
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Location</p>
+                            <input type="text" id="ev-loc" class="btn-ghost" style="width:100%; padding: 14px; font-size: 15px;" placeholder="e.g. Main Auditorium">
                         </div>
-                        <button class="btn-primary" style="margin-top: 12px;" onclick="EventsView.addEvent()">Create & Notify Members</button>
+                        <button class="btn-primary" style="margin-top: 12px; padding: 16px; font-weight: 700;" onclick="EventsView.addEvent()">
+                            <i data-lucide="calendar-plus" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Create & Notify Members
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1979,48 +2066,78 @@ const AdminInternsView = {
         const data = StorageService.getData() || { interns: [] };
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+            <div class="view-header slide-up" style="display: flex; align-items: center; gap: 24px;">
                 <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
                 <div>
-                    <h2>Intern Management</h2>
+                    <h2 style="font-size: 28px; font-weight: 700;">Intern Management</h2>
                     <p>Track college interns and their parent contacts.</p>
                 </div>
             </div>
 
-            <div class="section">
-                <div class="grid-responsive" style="gap: 32px;">
-                    <div class="stat-card">
-                        <h3>Onboard New Intern</h3>
-                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
-                            <input type="text" id="int-name" class="btn-ghost" style="padding: 12px;" placeholder="Full Name">
-                            <input type="text" id="int-college" class="btn-ghost" style="padding: 12px;" placeholder="College Name">
-                            <input type="email" id="int-email" class="btn-ghost" style="padding: 12px;" placeholder="Intern Email">
-                            <input type="tel" id="int-phone" class="btn-ghost" style="padding: 12px;" placeholder="Intern Phone">
-                            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 8px 0;">
-                            <p class="user-role font-xs">Emergency / Parent Contact</p>
-                            <input type="text" id="int-p-name" class="btn-ghost" style="padding: 12px;" placeholder="Parent Name">
-                            <input type="tel" id="int-p-phone" class="btn-ghost" style="padding: 12px;" placeholder="Parent Phone">
-                            <button class="btn-primary" onclick="AdminInternsView.addIntern()">Add Intern</button>
+            <div class="grid-responsive slide-up" style="gap: 32px; margin-top: 32px; animation-delay: 0.1s;">
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Onboard New Intern</h3>
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Full Name</p>
+                            <input type="text" id="int-name" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="e.g. John Doe">
                         </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <h3>Current Interns</h3>
-                        <div class="alerts-list" style="margin-top: 24px; max-height: 500px; overflow-y: auto;">
-                            ${data.interns.map(i => `
-                                <div class="alert-item">
-                                    <div class="alert-indicator" style="background: var(--accent-emerald)"></div>
-                                    <div class="alert-content">
-                                        <p class="alert-msg">${i.name}</p>
-                                        <p class="user-role">${i.collegeName} • ${i.phone}</p>
-                                        <p class="user-role font-xs" style="margin-top: 4px;">Parent: ${i.parentName} (${i.parentPhone})</p>
-                                    </div>
-                                    <button class="icon-btn" onclick="AdminInternsView.deleteIntern(${i.id})">
-                                        <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
-                                    </button>
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">College Name</p>
+                            <input type="text" id="int-college" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="e.g. State University">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Intern Email</p>
+                                <input type="email" id="int-email" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="john@email.com">
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Intern Phone</p>
+                                <input type="tel" id="int-phone" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="+91 XXXXX XXXXX">
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 16px 0; border-top: 1px dashed var(--glass-border);"></div>
+                        
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 16px; text-transform: uppercase; color: var(--accent-amber);">Emergency / Parent Contact</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div>
+                                    <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Parent Name</p>
+                                    <input type="text" id="int-p-name" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="Parent Name">
                                 </div>
-                            `).join('') || '<p class="empty-msg">No interns registered.</p>'}
+                                <div>
+                                    <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Parent Phone</p>
+                                    <input type="tel" id="int-p-phone" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="+91 XXXXX XXXXX">
+                                </div>
+                            </div>
                         </div>
+
+                        <button class="btn-primary" style="margin-top: 16px; padding: 16px; font-weight: 700;" onclick="AdminInternsView.addIntern()">
+                            <i data-lucide="user-check" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Register Intern
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Active Interns</h3>
+                    <div class="alerts-list" style="max-height: 550px; overflow-y: auto; padding-right: 12px; display: flex; flex-direction: column; gap: 12px;">
+                        ${data.interns.map(i => `
+                            <div class="alert-item premium">
+                                <div class="alert-indicator" style="background: var(--accent-emerald)"></div>
+                                <div class="user-avatar" style="width: 46px; height: 46px; background: var(--accent-emerald); flex-shrink: 0; font-size: 18px;">${i.name.charAt(0)}</div>
+                                <div class="alert-content">
+                                    <p class="alert-msg" style="font-size: 16px; font-weight: 700;">${i.name}</p>
+                                    <p class="user-role" style="font-size: 12px; margin-bottom: 4px;">${i.collegeName} • <span style="color: var(--accent-blue);">${i.phone}</span></p>
+                                    <p class="user-role font-xs" style="background: var(--bg-primary); padding: 6px 10px; border-radius: 6px; display: inline-block; border: 1px solid var(--glass-border);">
+                                        <i data-lucide="shield" style="width: 10px; height: 10px; margin-right: 4px; display: inline-block; vertical-align: middle;"></i> Parent: ${i.parentName} (${i.parentPhone})
+                                    </p>
+                                </div>
+                                <button class="icon-btn btn-sm" onclick="AdminInternsView.deleteIntern(${i.id})" title="Remove Intern">
+                                    <i data-lucide="trash-2" style="color: var(--accent-rose); width: 16px; height: 16px;"></i>
+                                </button>
+                            </div>
+                        `).join('') || '<div style="text-align: center; padding: 40px 0;"><p class="user-role">No interns registered.</p></div>'}
                     </div>
                 </div>
             </div>
@@ -2063,54 +2180,66 @@ const AdminClassesView = {
         const data = StorageService.getData();
         const container = document.getElementById('view-container');
         container.innerHTML = `
-            <div class="view-header" style="display: flex; align-items: center; gap: 20px;">
+            <div class="view-header slide-up" style="display: flex; align-items: center; gap: 24px;">
                 <button class="icon-btn" onclick="switchView('admin')"><i data-lucide="arrow-left"></i></button>
                 <div>
-                    <h2>Class Schedule</h2>
+                    <h2 style="font-size: 28px; font-weight: 700;">Class Schedule</h2>
                     <p>Manage the weekly timetable for all subjects.</p>
                 </div>
             </div>
 
-            <div class="section">
-                <div class="grid-responsive" style="gap: 32px;">
-                    <div class="stat-card">
-                        <h3>Add Weekly Slot</h3>
-                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
-                            <input type="text" id="cls-title" class="btn-ghost" style="padding: 12px;" placeholder="Subject (e.g. English)">
-                            <select id="cls-day" class="btn-ghost" style="padding: 12px;">
-                                <option>Monday</option>
-                                <option>Tuesday</option>
-                                <option>Wednesday</option>
-                                <option>Thursday</option>
-                                <option>Friday</option>
-                                <option>Saturday</option>
-                            </select>
-                            <input type="time" id="cls-time" class="btn-ghost" style="padding: 12px;">
-                            <button class="btn-primary" onclick="AdminClassesView.addClass()">Save Schedule Slot</button>
+            <div class="grid-responsive slide-up" style="gap: 32px; margin-top: 32px; animation-delay: 0.1s;">
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Add Weekly Slot</h3>
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div>
+                            <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Subject Title</p>
+                            <input type="text" id="cls-title" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;" placeholder="e.g. English Literature">
                         </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Day of Week</p>
+                                <select id="cls-day" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px; cursor: pointer;">
+                                    <option>Monday</option>
+                                    <option>Tuesday</option>
+                                    <option>Wednesday</option>
+                                    <option>Thursday</option>
+                                    <option>Friday</option>
+                                    <option>Saturday</option>
+                                </select>
+                            </div>
+                            <div>
+                                <p class="user-role font-xs" style="margin-bottom: 8px; text-transform: uppercase;">Time slot</p>
+                                <input type="time" id="cls-time" class="btn-ghost" style="width: 100%; padding: 14px; font-size: 15px;">
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="margin-top: 16px; padding: 16px; font-weight: 700;" onclick="AdminClassesView.addClass()">
+                            <i data-lucide="calendar-plus" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"></i> Save Schedule Slot
+                        </button>
                     </div>
+                </div>
 
-                    <div class="stat-card">
-                        <h3>Upcoming Timetable</h3>
-                        <div class="alerts-list" style="margin-top: 24px;">
-                            ${data.classes.map(c => `
-                                <div class="alert-item">
-                                    <div class="alert-indicator" style="background: var(--accent-blue)"></div>
-                                    <div class="alert-content">
-                                        <p class="alert-msg">${c.title}</p>
-                                        <p class="user-role">${c.dayOfWeek} at ${c.time}</p>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <button class="btn-ghost" style="padding: 8px 12px; font-size: 11px;" onclick="AdminClassesView.notifyParents('${c.title}')">
-                                            <i data-lucide="send" style="width: 12px; height: 12px; margin-right: 4px;"></i> Remind Parents
-                                        </button>
-                                        <button class="icon-btn" onclick="AdminClassesView.deleteClass(${c.id})">
-                                            <i data-lucide="trash-2" style="color: var(--accent-rose);"></i>
-                                        </button>
-                                    </div>
+                <div class="stat-card" style="padding: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;">Upcoming Timetable</h3>
+                    <div class="alerts-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 8px;">
+                        ${data.classes.map(c => `
+                            <div class="alert-item premium">
+                                <div class="alert-indicator" style="background: var(--accent-blue)"></div>
+                                <div class="alert-icon-circle"><i data-lucide="book-open"></i></div>
+                                <div class="alert-content">
+                                    <p class="alert-msg" style="font-size: 16px; font-weight: 700;">${c.title}</p>
+                                    <p class="user-role" style="font-size: 12px; margin-top: 2px;">${c.dayOfWeek} at <span style="font-weight: 600; color: var(--text-primary);">${c.time}</span></p>
                                 </div>
-                            `).join('')}
-                        </div>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <button class="btn-ghost btn-sm" onclick="AdminClassesView.notifyParents('${c.title}')">
+                                        <i data-lucide="bell" style="width: 14px; height: 14px; margin-right: 6px;"></i> Remind
+                                    </button>
+                                    <button class="icon-btn btn-sm" onclick="AdminClassesView.deleteClass(${c.id})" title="Delete Slot">
+                                        <i data-lucide="trash-2" style="color: var(--accent-rose); width: 14px; height: 14px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('') || '<div style="text-align: center; padding: 40px 0;"><p class="user-role">No classes scheduled.</p></div>'}
                     </div>
                 </div>
             </div>

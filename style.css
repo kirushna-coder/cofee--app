@@ -1,46 +1,66 @@
-/* CoFee App - Design System */
-
-.light-theme {
-    --bg-primary: #f8fafc;
-    --bg-secondary: #ffffff;
-    --bg-sidebar: #f1f5f9;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --accent-blue: #2563eb;
-    --accent-blue-glow: rgba(37, 99, 235, 0.2);
-    --border-color: rgba(15, 23, 42, 0.06);
-    --glass-bg: rgba(255, 255, 255, 0.5);
-    --glass-border: rgba(15, 23, 42, 0.1);
-    --shadow-premium: 0 10px 30px rgba(15, 23, 42, 0.08);
-}
+/* CoFee App - Premium Design System */
 
 :root {
-    /* Colors */
-    --bg-primary: #0B0F19; /* Midnight blue-black */
-    --bg-secondary: #111827; /* Rich dark slate */
-    --bg-sidebar: rgba(17, 24, 39, 0.85);
-    --text-primary: #F9FAFB;
-    --text-secondary: #9CA3AF;
-    --accent-blue: #3B82F6; /* Vibrant professional blue */
-    --accent-blue-subtle: #60A5FA;
-    --accent-blue-glow: rgba(59, 130, 246, 0.3);
-    --accent-emerald: #10B981;
-    --accent-amber: #F59E0B;
-    --accent-rose: #EF4444;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --glass-bg: rgba(17, 24, 39, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.05);
+    /* Base Colors - Professional HSL Palette */
+    --bg-primary: hsl(222, 47%, 7%);    /* Deep Midnight */
+    --bg-secondary: hsl(222, 47%, 11%);  /* Midnight Slate */
+    --bg-sidebar: hsla(222, 47%, 11%, 0.85);
+    
+    --text-primary: hsl(210, 40%, 98%);
+    --text-secondary: hsl(215, 20%, 65%);
+    --text-muted: hsl(215, 15%, 45%);
+    
+    /* Accents */
+    --accent-blue: hsl(217, 91%, 60%);
+    --accent-blue-subtle: hsl(217, 91%, 75%);
+    --accent-blue-glow: hsla(217, 91%, 60%, 0.3);
+    
+    --accent-emerald: hsl(162, 84%, 40%);
+    --accent-emerald-glow: hsla(162, 84%, 40%, 0.2);
+    
+    --accent-amber: hsl(38, 92%, 50%);
+    --accent-amber-glow: hsla(38, 92%, 50%, 0.2);
+    
+    --accent-rose: hsl(349, 89%, 60%);
+    --accent-rose-glow: hsla(349, 89%, 60%, 0.2);
+    
+    /* Borders & Glass */
+    --border-color: hsla(210, 40%, 98%, 0.06);
+    --glass-bg: hsla(222, 47%, 11%, 0.6);
+    --glass-border: hsla(210, 40%, 98%, 0.08);
+    --glass-shimmer: hsla(210, 40%, 98%, 0.02);
     
     /* Layout */
-    --sidebar-width: 260px;
-    --header-height: 70px;
-    --radius-lg: 20px;
-    --radius-md: 14px;
-    --radius-sm: 8px;
+    --sidebar-width: 280px;
+    --header-height: 72px;
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
     
-    /* Effects */
-    --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Premium Shadows & Effects */
+    --shadow-premium: 0 20px 50px hsla(0, 0%, 0%, 0.4), 
+                      0 0 0 1px var(--glass-border);
+    --shadow-glow: 0 0 20px var(--accent-blue-glow);
+    --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.light-theme {
+    --bg-primary: hsl(210, 40%, 98%);
+    --bg-secondary: hsl(0, 0%, 100%);
+    --bg-sidebar: hsla(210, 40%, 98%, 0.85);
+    
+    --text-primary: hsl(222, 47%, 11%);
+    --text-secondary: hsl(215, 20%, 40%);
+    --text-muted: hsl(215, 15%, 55%);
+    
+    --accent-blue: hsl(217, 91%, 50%);
+    --accent-blue-glow: hsla(217, 91%, 50%, 0.15);
+    
+    --border-color: hsla(222, 47%, 11%, 0.06);
+    --glass-bg: hsla(0, 0%, 100%, 0.7);
+    --glass-border: hsla(222, 47%, 11%, 0.08);
+    
+    --shadow-premium: 0 10px 30px hsla(222, 47%, 11%, 0.08);
 }
 
 * {
@@ -611,13 +631,75 @@ body {
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* Badges & Toasts */
+/* Stat Cards & Wrappers */
+.stat-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    transition: var(--transition-smooth);
+}
+
+.stat-icon-wrapper.blue { background: hsla(217, 91%, 60%, 0.1); color: var(--accent-blue); }
+.stat-icon-wrapper.amber { background: hsla(38, 92%, 50%, 0.1); color: var(--accent-amber); }
+.stat-icon-wrapper.rose { background: hsla(349, 89%, 60%, 0.1); color: var(--accent-rose); }
+.stat-icon-wrapper.emerald { background: hsla(162, 84%, 40%, 0.1); color: var(--accent-emerald); }
+
+.stat-trend {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 8px;
+    display: block;
+}
+
+.stat-trend.positive { color: var(--accent-emerald); }
+.stat-trend.warning { color: var(--accent-amber); }
+.stat-trend.negative { color: var(--accent-rose); }
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--glass-bg);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--glass-border);
+}
+
+.empty-icon {
+    font-size: 32px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.alert-item.premium {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    padding: 16px;
+}
+
+.alert-icon-circle {
+    width: 40px;
+    height: 40px;
+    background: var(--glass-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-blue);
+    flex-shrink: 0;
+}
+
+/* Badge Enhancements */
 .badge {
     padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
+    border-radius: 6px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .badge-emerald { background: rgba(16, 185, 129, 0.1); color: var(--accent-emerald); }
@@ -654,12 +736,148 @@ body {
 
 /* Animations */
 .fade-in {
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-up {
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 hsla(162, 84%, 40%, 0.4); }
+    70% { box-shadow: 0 0 0 10px hsla(162, 84%, 40%, 0); }
+    100% { box-shadow: 0 0 0 0 hsla(162, 84%, 40%, 0); }
+}
+
+/* System Status */
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--glass-bg);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-emerald);
+    border-radius: 50%;
+    animation: pulse-glow 2s infinite;
+}
+
+.status-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-emerald);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Real-Time Process Hub */
+.process-hub {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 320px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-premium);
+    z-index: 4000;
+    overflow: hidden;
+    transition: var(--transition-smooth);
+    display: none; /* Shown via JS when processes are active */
+}
+
+.process-hub.active {
+    display: block;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.process-hub.minimized {
+    height: 60px;
+}
+
+.process-hub.minimized .process-list {
+    display: none;
+}
+
+.process-hub-header {
+    padding: 16px 20px;
+    background: var(--glass-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.process-hub-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.process-list {
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.process-item {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    margin-bottom: 8px;
+    border: 1px solid var(--glass-border);
+}
+
+.process-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.process-name {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.process-percentage {
+    font-size: 12px;
+    color: var(--accent-blue);
+    font-weight: 700;
+}
+
+.progress-bar-container {
+    height: 6px;
+    background: var(--glass-bg);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-blue-subtle));
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.process-status-text {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
 /* Mobile Responsiveness - Top Nav Slide Down */

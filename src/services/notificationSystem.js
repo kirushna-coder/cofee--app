@@ -58,6 +58,8 @@ const ReminderService = {
  */
 
 const NotificationSystem = {
+    activeProcesses: [],
+
     toast(message, type = 'info') {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -84,6 +86,80 @@ const NotificationSystem = {
             setTimeout(() => toast.remove(), 300);
         }, 5000);
     },
+
+    // --- Real-Time Process Hub Methods ---
+    
+    startProcess(name, totalSteps) {
+        const id = Date.now() + Math.random().toString(36).substr(2, 9);
+        const process = {
+            id,
+            name,
+            totalSteps,
+            currentStep: 0,
+            status: 'Initializing...',
+            percentage: 0
+        };
+        
+        this.activeProcesses.push(process);
+        this.renderProcessHub();
+        return id;
+    },
+
+    updateProcess(id, step, statusText = null) {
+        const process = this.activeProcesses.find(p => p.id === id);
+        if (!process) return;
+
+        process.currentStep = step;
+        process.percentage = Math.round((step / process.totalSteps) * 100);
+        if (statusText) process.status = statusText;
+
+        this.renderProcessHub();
+    },
+
+    finishProcess(id, statusText = 'Completed') {
+        const process = this.activeProcesses.find(p => p.id === id);
+        if (!process) return;
+
+        process.currentStep = process.totalSteps;
+        process.percentage = 100;
+        process.status = statusText;
+        this.renderProcessHub();
+
+        // Remove from UI after delay
+        setTimeout(() => {
+            this.activeProcesses = this.activeProcesses.filter(p => p.id !== id);
+            this.renderProcessHub();
+        }, 5000);
+    },
+
+    renderProcessHub() {
+        const hub = document.getElementById('process-hub');
+        const list = document.getElementById('process-list');
+        if (!hub || !list) return;
+
+        if (this.activeProcesses.length === 0) {
+            hub.classList.remove('active');
+            return;
+        }
+
+        hub.classList.add('active');
+        list.innerHTML = this.activeProcesses.map(p => `
+            <div class="process-item">
+                <div class="process-info">
+                    <span class="process-name">${p.name}</span>
+                    <span class="process-percentage">${p.percentage}%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${p.percentage}%"></div>
+                </div>
+                <div class="process-status-text">${p.status}</div>
+            </div>
+        `).join('');
+        
+        lucide.createIcons();
+    },
+
+    // --- Notification Methods ---
 
     updateBadge() {
         const badge = document.getElementById('notif-badge');
@@ -189,12 +265,20 @@ const NotificationSystem = {
             return Promise.resolve();
         }
 
-        this.toast(`Simulating ${channel} to ${target}...`, 'info');
+        const processId = this.startProcess(`Sending ${type} to ${target}`, 10);
+        
         return new Promise(resolve => {
-            setTimeout(() => {
-                this.toast(`${type} sent successfully via ${channel}!`, 'success');
-                resolve();
-            }, 2000);
+            let step = 0;
+            const interval = setInterval(() => {
+                step++;
+                this.updateProcess(processId, step, `Channel: ${channel} | Step ${step}/10`);
+                if (step >= 10) {
+                    clearInterval(interval);
+                    this.finishProcess(processId, 'Sent Successfully');
+                    this.toast(`${type} sent successfully via ${channel}!`, 'success');
+                    resolve();
+                }
+            }, 200);
         });
     },
 
@@ -211,21 +295,35 @@ const NotificationSystem = {
         const config = WhatsappApiService.getConfig();
         if (config.enabled && config.phoneNumberId && config.accessToken) {
             if (confirm(`Send automatic broadcast to ${studentsWithPhones.length} students via WhatsApp API?`)) {
-                this.toast(`Sending ${studentsWithPhones.length} automatic messages...`, 'info');
+                const processId = this.startProcess('WhatsApp API Broadcast', studentsWithPhones.length);
                 
                 let successCount = 0;
-                for (const student of studentsWithPhones) {
+                for (let i = 0; i < studentsWithPhones.length; i++) {
+                    const student = studentsWithPhones[i];
+                    this.updateProcess(processId, i + 1, `Sending to ${student.name}...`);
+                    
                     const result = await WhatsappApiService.sendMessage(student.parentPhone, message);
                     if (result.success) successCount++;
+                    
+                    // Small delay to simulate real-time processing and avoid rate limiting
+                    await new Promise(r => setTimeout(r, 500));
                 }
                 
+                this.finishProcess(processId, `Broadcast Finished (${successCount}/${studentsWithPhones.length} sent)`);
                 this.toast(`${successCount}/${studentsWithPhones.length} messages sent!`, 'success');
             }
         } else {
             if (confirm(`Send manual broadcast to ${studentsWithPhones.length} students/parents? (Will open multiple tabs)`)) {
+                const processId = this.startProcess('Manual WhatsApp Broadcast', studentsWithPhones.length);
+                
                 studentsWithPhones.forEach((student, index) => {
                     setTimeout(() => {
                         this.openManualWhatsApp(student.parentPhone, message);
+                        this.updateProcess(processId, index + 1, `Opening tab for ${student.name}...`);
+                        
+                        if (index === studentsWithPhones.length - 1) {
+                            this.finishProcess(processId, 'All tabs opened');
+                        }
                     }, index * 1000); 
                 });
                 this.toast(`Opening ${studentsWithPhones.length} WhatsApp tabs...`, 'info');
